@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
 import "./globals.css";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 const bodyFont = DM_Sans({ subsets: ["latin"], variable: "--font-body" });
 const displayFont = Fraunces({
   subsets: ["latin"],
@@ -12,7 +14,7 @@ export const metadata: Metadata = {
   title: "ComeBack | Your return, at your pace",
   description:
     "A clinician-connected return-to-play companion for mothers in cricket.",
-  manifest: "/manifest.webmanifest",
+  manifest: `${basePath}/manifest.webmanifest`,
 };
 
 export const viewport: Viewport = {

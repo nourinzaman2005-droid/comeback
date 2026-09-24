@@ -58,7 +58,13 @@ function drawPose(canvas: HTMLCanvasElement, points: Landmark[]) {
   for (const point of points) {
     if ((point.visibility ?? 1) < 0.5) continue;
     context.beginPath();
-    context.arc(point.x * canvas.width, point.y * canvas.height, 4, 0, Math.PI * 2);
+    context.arc(
+      point.x * canvas.width,
+      point.y * canvas.height,
+      4,
+      0,
+      Math.PI * 2,
+    );
     context.fill();
   }
 }
@@ -186,7 +192,10 @@ export function PoseCamera({
           setMessage(event.data.message);
         }
       };
-      worker.postMessage({ type: "init" });
+      worker.postMessage({
+        type: "init",
+        basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? "",
+      });
     } catch (error) {
       stopCamera();
       setStatus("error");
@@ -226,10 +235,16 @@ export function PoseCamera({
       </div>
 
       <div className="real-camera">
-        <video ref={videoRef} muted playsInline aria-label="Live camera preview" />
+        <video
+          ref={videoRef}
+          muted
+          playsInline
+          aria-label="Live camera preview"
+        />
         <canvas ref={canvasRef} width={720} height={960} aria-hidden="true" />
         <div className={`camera-status camera-${status}`}>
-          <i /> {status === "running" ? "On-device pose" : "Camera not recording"}
+          <i />{" "}
+          {status === "running" ? "On-device pose" : "Camera not recording"}
         </div>
         <div className="rep-counter">
           <strong>{displayValue}</strong>
@@ -291,7 +306,11 @@ export function PoseCamera({
           <strong>{metrics.fps ? metrics.fps.toFixed(0) : "--"} fps</strong>
         </div>
       </div>
-      <button className="reset-measurement" type="button" onClick={() => reset()}>
+      <button
+        className="reset-measurement"
+        type="button"
+        onClick={() => reset()}
+      >
         <RotateCcw size={15} /> Reset observations
       </button>
       <p className="camera-boundary">

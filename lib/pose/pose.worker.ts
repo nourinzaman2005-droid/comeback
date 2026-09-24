@@ -7,10 +7,13 @@ let landmarker: PoseLandmarker | null = null;
 self.onmessage = async (event: MessageEvent) => {
   if (event.data.type === "init") {
     try {
-      const vision = await FilesetResolver.forVisionTasks("/mediapipe/wasm");
+      const basePath = event.data.basePath ?? "";
+      const vision = await FilesetResolver.forVisionTasks(
+        `${basePath}/mediapipe/wasm`,
+      );
       landmarker = await PoseLandmarker.createFromOptions(vision, {
         baseOptions: {
-          modelAssetPath: "/models/pose_landmarker_lite.task",
+          modelAssetPath: `${basePath}/models/pose_landmarker_lite.task`,
           delegate: "GPU",
         },
         runningMode: "VIDEO",
@@ -23,7 +26,8 @@ self.onmessage = async (event: MessageEvent) => {
     } catch (error) {
       self.postMessage({
         type: "error",
-        message: error instanceof Error ? error.message : "Pose model failed to load",
+        message:
+          error instanceof Error ? error.message : "Pose model failed to load",
       });
     }
     return;
@@ -43,7 +47,10 @@ self.onmessage = async (event: MessageEvent) => {
     } catch (error) {
       self.postMessage({
         type: "error",
-        message: error instanceof Error ? error.message : "Frame could not be measured",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Frame could not be measured",
       });
     } finally {
       bitmap.close();

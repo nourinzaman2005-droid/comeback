@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: comeback-api-nourin
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci
+    startCommand: node server/index.mjs
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEMO_MODE
+        value: "true"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: comeback-postgres
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: FRONTEND_ORIGIN
+        value: https://nourinzaman2005-droid.github.io
+databases:
+  - name: comeback-postgres
+    plan: free
+    region: singapore
+    databaseName: comeback
+    user: comeback
+    postgresMajorVersion: "18"

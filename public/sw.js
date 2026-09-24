@@ -1,5 +1,10 @@
-const CACHE_NAME = "comeback-shell-v2";
-const APP_SHELL = ["/", "/manifest.webmanifest", "/icon.svg"];
+const CACHE_NAME = "comeback-shell-v3";
+const SCOPE_PATH = new URL(self.registration.scope).pathname;
+const APP_SHELL = [
+  SCOPE_PATH,
+  `${SCOPE_PATH}manifest.webmanifest`,
+  `${SCOPE_PATH}icon.svg`,
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -13,7 +18,11 @@ self.addEventListener("activate", (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))),
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME)
+            .map((key) => caches.delete(key)),
+        ),
       ),
   );
   self.clients.claim();
@@ -25,13 +34,15 @@ self.addEventListener("message", (event) => {
     (resource) => new URL(resource).origin === self.location.origin,
   );
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) =>
-      Promise.all(
-        resources.map((resource) =>
-          cache.add(resource).catch(() => undefined),
+    caches
+      .open(CACHE_NAME)
+      .then((cache) =>
+        Promise.all(
+          resources.map((resource) =>
+            cache.add(resource).catch(() => undefined),
+          ),
         ),
       ),
-    ),
   );
 });
 
@@ -44,14 +55,18 @@ self.addEventListener("fetch", (event) => {
       .then((response) => {
         if (response.ok) {
           const copy = response.clone();
-          event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)));
+          event.waitUntil(
+            caches
+              .open(CACHE_NAME)
+              .then((cache) => cache.put(event.request, copy)),
+          );
         }
         return response;
       })
       .catch(async () => {
         const cached = await caches.match(event.request);
         if (cached) return cached;
-        if (event.request.mode === "navigate") return caches.match("/");
+        if (event.request.mode === "navigate") return caches.match(SCOPE_PATH);
         return new Response("Offline resource unavailable", { status: 503 });
       }),
   );
