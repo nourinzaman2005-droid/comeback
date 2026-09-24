@@ -6,7 +6,6 @@ import {
   Bell,
   Camera,
   Check,
-  CheckCircle2,
   ChevronRight,
   CircleUserRound,
   Clock3,
@@ -15,7 +14,6 @@ import {
   LockKeyhole,
   MessageCircleMore,
   Pause,
-  Play,
   ShieldCheck,
   Sparkles,
   Stethoscope,
@@ -23,6 +21,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { DemoStep, nextDemoStep, previousDemoStep } from "@/lib/demo-flow";
+import { PoseCamera } from "./pose-camera";
 import { ServiceWorkerRegister } from "./service-worker-register";
 
 const roadmap = [
@@ -44,7 +43,6 @@ const stepNumber: Record<DemoStep, number> = {
 
 export function DemoApp() {
   const [step, setStep] = useState<DemoStep>("home");
-  const [isPlaying, setIsPlaying] = useState(true);
   const [symptomsClear, setSymptomsClear] = useState(true);
 
   const goNext = () => setStep((current) => nextDemoStep(current));
@@ -122,8 +120,6 @@ export function DemoApp() {
           {step === "setup" && <SetupScreen onBack={goBack} onNext={goNext} />}
           {step === "test" && (
             <TestScreen
-              isPlaying={isPlaying}
-              onToggle={() => setIsPlaying(!isPlaying)}
               onBack={goBack}
               onNext={goNext}
             />
@@ -363,13 +359,9 @@ function SetupScreen({
 }
 
 function TestScreen({
-  isPlaying,
-  onToggle,
   onBack,
   onNext,
 }: {
-  isPlaying: boolean;
-  onToggle: () => void;
   onBack: () => void;
   onNext: () => void;
 }) {
@@ -380,41 +372,7 @@ function TestScreen({
         subtitle="Left side, 10 repetitions"
         onBack={onBack}
       />
-      <div className="live-camera">
-        <div className="camera-status">
-          <i /> On-device camera
-        </div>
-        <div className="pose-figure">
-          <span className="joint head-joint" />
-          <span className="joint shoulder-left" />
-          <span className="joint shoulder-right" />
-          <span className="joint hip-left" />
-          <span className="joint hip-right" />
-          <span className="joint knee-left" />
-          <span className="joint knee-right" />
-          <span className="joint ankle-left" />
-          <span className="joint ankle-right" />
-          <span className="bone shoulders" />
-          <span className="bone torso-left" />
-          <span className="bone torso-right" />
-          <span className="bone hips" />
-          <span className="bone thigh-left" />
-          <span className="bone thigh-right" />
-          <span className="bone calf-left" />
-          <span className="bone calf-right" />
-        </div>
-        <div className="rep-counter">
-          <strong>{isPlaying ? "7" : "6"}</strong>
-          <span>of 10</span>
-        </div>
-        <div className="form-cue">
-          <CheckCircle2 size={17} /> Rep counted. Move at a comfortable pace.
-        </div>
-      </div>
-      <button className="pause-button" onClick={onToggle}>
-        {isPlaying ? <Pause size={20} /> : <Play size={20} />}{" "}
-        {isPlaying ? "Pause" : "Resume"}
-      </button>
+      <PoseCamera />
       <button className="primary-button" onClick={onNext}>
         Finish demo set <ArrowRight size={19} />
       </button>

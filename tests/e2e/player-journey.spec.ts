@@ -23,6 +23,12 @@ test("player completes the guided readiness demo without a learning curve", asyn
   await expect(
     page.getByRole("heading", { name: "Single-leg squat" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Single-leg balance/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/Measurements describe movement only/),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: /Finish demo set/ }).click();
   await expect(

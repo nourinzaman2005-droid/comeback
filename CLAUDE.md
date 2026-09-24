@@ -543,11 +543,11 @@ gantt
 ## 11. Current Status
 
 - **Date:** 25 Sep 2026
-- **Phase:** Tiers 0 and 1 complete. Tier 2 camera tests are next.
+- **Phase:** Tiers 0 and 1 complete. Tier 2 is implemented and awaiting its physical Android validation exit check.
 - **Completed locally:**
   - Next.js, TypeScript, Tailwind CSS, ESLint, Vitest, and Playwright dependencies configured.
   - Responsive PWA shell and manifest created, with a minimal production service worker.
-  - Player dashboard, 6 Rs roadmap, camera setup, simulated pose-test screen, symptom check-in, result, and clinician-review gate implemented.
+  - Player dashboard, 6 Rs roadmap, camera setup, real on-device pose-test screen, symptom check-in, result, and clinician-review gate implemented.
   - Safety and privacy messaging included. The prototype never presents a medical-clearance decision.
   - Team ownership documented in `docs/TEAM_TASKS.md`.
   - Production PWA behavior verified in an automated Pixel-sized browser: full readiness demo, responsive width, manifest, and active service worker.
@@ -557,10 +557,13 @@ gantt
   - Original Goom, Donnelly, and Brockwell 2019 guideline reviewed. Load-impact tests, strength screens, symptom stops, evidence level, and clinical limits are encoded in `content/guidelines/tests.json` with page references.
   - Deterministic 6 Rs progression engine implemented in `lib/rules` with mandatory clinician approval, symptom holds, stage requirements, and source references.
   - Rules engine has 100% statement, branch, function, and line coverage enforced in CI.
+  - MediaPipe PoseLandmarker runs in a Web Worker from locally hosted model and WebAssembly assets. Raw camera frames are not persisted or uploaded.
+  - Single-leg squat, balance, hop, and bridge modes include landmark smoothing, framing quality, counting or timing, and descriptive movement metrics.
+  - Camera metric unit tests and mobile journey tests pass. The required mid-range Android and manual-recording validation remains pending in `docs/CAMERA_VALIDATION.md`.
 - **Research correction:** The official ICC document provides stage windows and general guidance but does not define camera-test pass thresholds or a complete automated clearance algorithm. Readiness tests and thresholds must be attributed to separate primary clinical sources and must not be presented as ICC criteria.
 - **Research correction:** Goom et al. 2019 classifies its postnatal load-impact and strength screening recommendations as Level 4 expert consensus. It is not a prescriptive protocol. Strength weakness directs rehabilitation but is not independently a barrier to return. Camera metrics remain observations for clinician review.
 - **Repository status:** Private repository created at `https://github.com/nourinzaman2005-droid/comeback`. The local `main` branch tracks `origin/main`, and CI runs on pushes and pull requests.
-- **Next task:** Tier 2 MediaPipe camera pipeline, beginning with the four planned tests and explicit camera-quality gates.
+- **Next task:** Complete the Tier 2 physical Android validation protocol before Tier 3 begins.
 - **Decisions log:**
   - 24 Sep 2026: Problem statement 3 chosen. ComeBack idea locked after two research rounds (11 ideas evaluated).
   - 24 Sep 2026: Stack decided (Section 7.1). LLM never decides progression.
@@ -571,3 +574,5 @@ gantt
   - 25 Sep 2026: Tier 0 completed with a live Vercel deployment and mobile PWA CI coverage.
   - 25 Sep 2026: User approved Groq's free API tier in place of the previously planned paid Claude API.
   - 25 Sep 2026: Tier 1 completed. ICC stage guidance, Goom test guidance, and ComeBack product safety gates remain separately attributed.
+  - 25 Sep 2026: Tier 2 camera pipeline implemented for four tests. Per the tier gate, Tier 3 remains paused until Android performance and recording counts are checked physically.
+  - 25 Sep 2026: Ashra's verified GitHub account is `ashrarahman`; a write-collaborator invitation was sent.
