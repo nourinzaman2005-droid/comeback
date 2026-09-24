@@ -63,7 +63,11 @@ function drawPose(canvas: HTMLCanvasElement, points: Landmark[]) {
   }
 }
 
-export function PoseCamera() {
+export function PoseCamera({
+  onMetrics,
+}: {
+  onMetrics?: (kind: TestKind, metrics: CameraMetrics) => void;
+}) {
   const [kind, setKind] = useState<TestKind>("squat");
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
@@ -165,6 +169,7 @@ export function PoseCamera() {
             );
             stateRef.current = measured.state;
             setMetrics(measured.metrics);
+            onMetrics?.(kindRef.current, measured.metrics);
             const canvas = canvasRef.current;
             if (canvas) drawPose(canvas, points);
           } else {
@@ -191,7 +196,7 @@ export function PoseCamera() {
           : "The camera could not start. Check that another app is not using it.",
       );
     }
-  }, [reset, sendFrame, stopCamera]);
+  }, [onMetrics, reset, sendFrame, stopCamera]);
 
   const selectTest = (nextKind: TestKind) => {
     setKind(nextKind);

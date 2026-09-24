@@ -10,6 +10,7 @@ export default defineConfig([
     "out/**",
     "coverage/**",
     "public/mediapipe/**",
+    "supabase/functions/**",
     "next-env.d.ts",
   ]),
 ]);

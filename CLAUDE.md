@@ -543,7 +543,7 @@ gantt
 ## 11. Current Status
 
 - **Date:** 25 Sep 2026
-- **Phase:** Tiers 0 and 1 complete. Tier 2 is implemented and awaiting its physical Android validation exit check.
+- **Phase:** Tiers 0, 1, 3, and the local Tier 4 demo are implemented. Tier 2 still awaits physical Android validation, and remote Tier 4 sync awaits a free Supabase project.
 - **Completed locally:**
   - Next.js, TypeScript, Tailwind CSS, ESLint, Vitest, and Playwright dependencies configured.
   - Responsive PWA shell and manifest created, with a minimal production service worker.
@@ -560,10 +560,15 @@ gantt
   - MediaPipe PoseLandmarker runs in a Web Worker from locally hosted model and WebAssembly assets. Raw camera frames are not persisted or uploaded.
   - Single-leg squat, balance, hop, and bridge modes include landmark smoothing, framing quality, counting or timing, and descriptive movement metrics.
   - Camera metric unit tests and mobile journey tests pass. The required mid-range Android and manual-recording validation remains pending in `docs/CAMERA_VALIDATION.md`.
+  - Consent onboarding, personalised cited roadmap, complete symptom check-in, profile, support, and result flows persist in IndexedDB.
+  - The visited player journey reloads offline through a runtime-caching service worker.
+  - The clinician dashboard reads linked local demo data, highlights symptoms, prevents unsafe approval, records approve or hold decisions, and updates the player stage across tabs.
+  - Supabase migration includes RLS, accepted clinician links, metrics-only test records, red-flag records, guarded one-stage decisions, and no video field. The Edge Function can deliver a metadata-only red-flag webhook.
+  - Automated mobile E2E covers onboarding, offline reload, symptom-free approval, cross-tab stage advancement, symptom hold, and approval prevention.
 - **Research correction:** The official ICC document provides stage windows and general guidance but does not define camera-test pass thresholds or a complete automated clearance algorithm. Readiness tests and thresholds must be attributed to separate primary clinical sources and must not be presented as ICC criteria.
 - **Research correction:** Goom et al. 2019 classifies its postnatal load-impact and strength screening recommendations as Level 4 expert consensus. It is not a prescriptive protocol. Strength weakness directs rehabilitation but is not independently a barrier to return. Camera metrics remain observations for clinician review.
 - **Repository status:** Private repository created at `https://github.com/nourinzaman2005-droid/comeback`. The local `main` branch tracks `origin/main`, and CI runs on pushes and pull requests.
-- **Next task:** Complete the Tier 2 physical Android validation protocol before Tier 3 begins.
+- **Next task:** Connect a free Supabase project for remote multi-device Tier 4 verification, and complete the Tier 2 physical Android validation protocol.
 - **Decisions log:**
   - 24 Sep 2026: Problem statement 3 chosen. ComeBack idea locked after two research rounds (11 ideas evaluated).
   - 24 Sep 2026: Stack decided (Section 7.1). LLM never decides progression.
@@ -576,3 +581,6 @@ gantt
   - 25 Sep 2026: Tier 1 completed. ICC stage guidance, Goom test guidance, and ComeBack product safety gates remain separately attributed.
   - 25 Sep 2026: Tier 2 camera pipeline implemented for four tests. Per the tier gate, Tier 3 remains paused until Android performance and recording counts are checked physically.
   - 25 Sep 2026: Ashra's verified GitHub account is `ashrarahman`; a write-collaborator invitation was sent.
+  - 25 Sep 2026: User explicitly directed work to continue into Tiers 3 and 4 despite the pending physical Tier 2 exit check.
+  - 25 Sep 2026: Tier 3 completed locally with consent onboarding, IndexedDB, an offline journey, and cited roadmap and symptom flows.
+  - 25 Sep 2026: Tier 4 completed for the same-device demo adapter. Remote Supabase schema, RLS, sync mapping, triggers, and Edge Function are implementation-ready but cannot be deployed or verified without a free Supabase project and authentication.
