@@ -553,11 +553,12 @@ gantt
   - Official nine-page ICC guideline reviewed and its 6 Rs content extracted to `content/guidelines/icc-2026.json` with page and section references.
   - Content validation tests explicitly prevent presenting the ICC framework as a complete automated medical-clearance protocol.
 - **Research correction:** The official ICC document provides stage windows and general guidance but does not define camera-test pass thresholds or a complete automated clearance algorithm. Readiness tests and thresholds must be attributed to separate primary clinical sources and must not be presented as ICC criteria.
-- **Repository status:** GitHub authentication is currently for `ahammadshawki8`, so the private repository cannot yet be created under `nourinzaman2005-droid`. Nourin must authenticate GitHub CLI on this machine before the prepared commit can be pushed to her profile.
-- **Next task:** Authenticate as Nourin and push the private repository, deploy and verify the PWA on a phone, then verify postnatal readiness tests against their original clinical source before implementing any deterministic health rules.
+- **Repository status:** Private repository created at `https://github.com/nourinzaman2005-droid/comeback`. The local `main` branch tracks `origin/main`, and CI runs on pushes and pull requests.
+- **Next task:** Deploy and verify the PWA on a phone, then verify postnatal readiness tests against their original clinical source before implementing any deterministic health rules.
 - **Decisions log:**
   - 24 Sep 2026: Problem statement 3 chosen. ComeBack idea locked after two research rounds (11 ideas evaluated).
   - 24 Sep 2026: Stack decided (Section 7.1). LLM never decides progression.
   - 24 Sep 2026: Player demo flow prioritised for a clear two-minute video: today view, guided test, symptom check, result, clinician review.
   - 24 Sep 2026: Nourin owns the player experience and demo narrative. Ashra owns guideline/rules validation, clinician workflow, backend security, and evidence. Both review safety wording and submission assets.
   - 24 Sep 2026: ICC guidance and externally sourced readiness-test protocols will remain separate in the data model and UI citations.
+  - 24 Sep 2026: Private GitHub repository created under Nourin's account and the initial prototype pushed to `main`.
