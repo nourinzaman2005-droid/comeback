@@ -550,11 +550,12 @@ gantt
   - Player dashboard, 6 Rs roadmap, camera setup, simulated pose-test screen, symptom check-in, result, and clinician-review gate implemented.
   - Safety and privacy messaging included. The prototype never presents a medical-clearance decision.
   - Team ownership documented in `docs/TEAM_TASKS.md`.
+  - Production PWA behavior verified in an automated Pixel-sized browser: full readiness demo, responsive width, manifest, and active service worker.
   - Official nine-page ICC guideline reviewed and its 6 Rs content extracted to `content/guidelines/icc-2026.json` with page and section references.
   - Content validation tests explicitly prevent presenting the ICC framework as a complete automated medical-clearance protocol.
 - **Research correction:** The official ICC document provides stage windows and general guidance but does not define camera-test pass thresholds or a complete automated clearance algorithm. Readiness tests and thresholds must be attributed to separate primary clinical sources and must not be presented as ICC criteria.
 - **Repository status:** Private repository created at `https://github.com/nourinzaman2005-droid/comeback`. The local `main` branch tracks `origin/main`, and CI runs on pushes and pull requests.
-- **Next task:** Deploy and verify the PWA on a phone, then verify postnatal readiness tests against their original clinical source before implementing any deterministic health rules.
+- **Next task:** Complete the pending Vercel browser authentication and deploy over HTTPS, then verify postnatal readiness tests against their original clinical source before implementing any deterministic health rules.
 - **Decisions log:**
   - 24 Sep 2026: Problem statement 3 chosen. ComeBack idea locked after two research rounds (11 ideas evaluated).
   - 24 Sep 2026: Stack decided (Section 7.1). LLM never decides progression.

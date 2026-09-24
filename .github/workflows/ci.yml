@@ -33,3 +33,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Install mobile browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run mobile journey tests
+        run: npm run test:e2e
