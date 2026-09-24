@@ -20,6 +20,7 @@ import {
   Target,
 } from "lucide-react";
 import { useState } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 import { DemoStep, nextDemoStep, previousDemoStep } from "@/lib/demo-flow";
 import { PoseCamera } from "./pose-camera";
 import { ServiceWorkerRegister } from "./service-worker-register";
@@ -57,7 +58,7 @@ export function DemoApp() {
           href="#"
           onClick={() => setStep("home")}
         >
-          <span className="brand-mark">C</span>
+          <BrandLogo className="brand-mark" />
           <span>ComeBack</span>
         </a>
         <div className="story-copy">
@@ -102,7 +103,7 @@ export function DemoApp() {
             onClick={() => setStep("home")}
             aria-label="Go home"
           >
-            <span className="brand-mark">C</span>
+            <BrandLogo className="brand-mark" />
             <span>ComeBack</span>
           </button>
           <div className="top-actions">
@@ -118,12 +119,7 @@ export function DemoApp() {
         <div className="screen" aria-live="polite">
           {step === "home" && <HomeScreen onStart={() => setStep("setup")} />}
           {step === "setup" && <SetupScreen onBack={goBack} onNext={goNext} />}
-          {step === "test" && (
-            <TestScreen
-              onBack={goBack}
-              onNext={goNext}
-            />
-          )}
+          {step === "test" && <TestScreen onBack={goBack} onNext={goNext} />}
           {step === "symptoms" && (
             <SymptomsScreen
               clear={symptomsClear}

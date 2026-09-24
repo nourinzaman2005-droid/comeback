@@ -15,6 +15,10 @@ export const metadata: Metadata = {
   description:
     "A clinician-connected return-to-play companion for mothers in cricket.",
   manifest: `${basePath}/manifest.webmanifest`,
+  icons: {
+    icon: [{ url: `${basePath}/icon.svg`, type: "image/svg+xml" }],
+    shortcut: `${basePath}/icon.svg`,
+  },
 };
 
 export const viewport: Viewport = {

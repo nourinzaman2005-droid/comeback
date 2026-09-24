@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 import guideline from "@/content/guidelines/icc-2026.json";
 import testGuideline from "@/content/guidelines/tests.json";
 import {
@@ -107,7 +108,7 @@ function Shell({
           className="brand brand-light brand-button"
           onClick={() => setPage("home")}
         >
-          <span className="brand-mark">C</span>
+          <BrandLogo className="brand-mark" />
           <span>ComeBack</span>
         </button>
         <div className="story-copy">
@@ -151,7 +152,7 @@ function Shell({
             onClick={() => setPage("home")}
             aria-label="Go home"
           >
-            <span className="brand-mark">C</span>
+            <BrandLogo className="brand-mark" />
             <span>ComeBack</span>
           </button>
           <div className="top-actions">

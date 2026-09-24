@@ -723,11 +723,9 @@ button {
 .clinician-logo {
   width: 42px;
   height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  color: white;
-  background: var(--plum-700);
+  display: block;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 5px 12px rgba(67, 31, 56, 0.16));
 }
 .clinician-topbar p {
   margin: 0;
@@ -1128,13 +1126,9 @@ button {
 .brand-mark {
   width: 38px;
   height: 38px;
-  display: grid;
-  place-items: center;
-  border-radius: 13px 13px 13px 5px;
-  font-family: var(--font-display), serif;
-  font-weight: 800;
-  background: var(--rose-300);
-  color: var(--plum-950);
+  display: block;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 7px 14px rgba(36, 14, 31, 0.16));
 }
 .story-copy {
   position: relative;

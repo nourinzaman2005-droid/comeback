@@ -7,11 +7,11 @@ import {
   ClipboardCheck,
   Clock3,
   ShieldCheck,
-  Stethoscope,
   UserRound,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 import {
   getAllValues,
   putValue,
@@ -146,9 +146,7 @@ export function ClinicianDashboard() {
       <h1 className="sr-only">Clinical care dashboard</h1>
       <header className="clinician-topbar">
         <div>
-          <span className="clinician-logo">
-            <Stethoscope size={21} />
-          </span>
+          <BrandLogo className="clinician-logo" />
           <p>
             <strong>ComeBack Clinical</strong>
             <span>Demo workspace</span>

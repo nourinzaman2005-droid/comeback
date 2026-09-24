@@ -548,6 +548,7 @@ gantt
 - **Completed locally:**
   - Next.js, TypeScript, Tailwind CSS, ESLint, Vitest, and Playwright dependencies configured.
   - Responsive PWA shell and manifest created, with a minimal production service worker.
+  - Custom ComeBack return-arc and cricket-ball brand mark is used across onboarding, player, clinician, PWA icon, and browser favicon surfaces.
   - Player dashboard, 6 Rs roadmap, camera setup, real on-device pose-test screen, symptom check-in, result, and clinician-review gate implemented.
   - Safety and privacy messaging included. The prototype never presents a medical-clearance decision.
   - Team ownership documented in `docs/TEAM_TASKS.md`.
@@ -593,3 +594,4 @@ gantt
   - 25 Sep 2026: Tier 5 completed with four-language UI, Bengali E2E, cited deterministic explanations, and a guarded optional Groq path. Live Groq output remains unverified until a free key is provided.
   - 25 Sep 2026: Tier 6 completed locally. Mobile and desktop E2E, automated accessibility checks, privacy and consent, fictional personas, offline behavior, and submission file-size checks pass.
   - 25 Sep 2026: The user replaced Vercel/Supabase with GitHub Pages plus Render/PostgreSQL. The repository was made public for Pages, a static-export workflow was added, and Ashra authored the Render API migration commit.
+  - 25 Sep 2026: A minimal plum return-arc and rose cricket-ball logo replaced generic letter and stethoscope brand marks across the product and favicon.
