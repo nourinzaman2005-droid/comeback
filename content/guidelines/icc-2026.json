@@ -1,0 +1,175 @@
+{
+  "document": {
+    "title": "ICC Return to Play Post Pregnancy Guidelines",
+    "publisher": "International Cricket Council",
+    "publishedDate": "2026-06-22",
+    "sourceUrl": "https://images.icc-cricket.com/image/upload/prd/qxjlf8pnqi7scvcpcg0d.pdf",
+    "sourcePageUrl": "https://www.icc-cricket.com/media-releases/icc-launches-return-to-play-post-pregnancy-guidelines-for-female-cricketers",
+    "accessedDate": "2026-09-24",
+    "pageCount": 9
+  },
+  "scope": {
+    "summary": "A general framework for science and medicine staff and ICC Member boards to support return to play after pregnancy.",
+    "limitations": [
+      "The framework must be applied subject to relevant local legislation and regulations.",
+      "The document does not define camera-test pass thresholds.",
+      "The document does not provide a complete automated medical-clearance algorithm."
+    ],
+    "reference": {
+      "pdfPage": 2,
+      "documentPage": "02",
+      "section": "Background"
+    }
+  },
+  "careTeam": {
+    "internal": [
+      "Cricket Medical Officer",
+      "Physiotherapist",
+      "Strength and Conditioning Coach",
+      "Dietician",
+      "Psychologist",
+      "Player Development Coach",
+      "Coach"
+    ],
+    "external": [
+      "Obstetrician or treating doctor",
+      "Women's Health Physiotherapist",
+      "Family, partner, or support person"
+    ],
+    "caseManager": "A doctor or physiotherapist is usually identified as the primary point of contact.",
+    "reference": {
+      "pdfPage": 3,
+      "documentPage": "03",
+      "section": "Care team"
+    }
+  },
+  "managementReviews": [
+    {
+      "timing": "On announcement of pregnancy",
+      "note": "Announcement remains at the player's discretion."
+    },
+    {
+      "timing": "Before birth",
+      "note": "Recommended during the third trimester."
+    },
+    {
+      "timing": "6 to 8 weeks after birth",
+      "note": "Held after the Review process."
+    },
+    {
+      "timing": "Every 4 weeks after reintegration begins",
+      "note": "Continues once the player decides to reintegrate into the cricket environment."
+    }
+  ],
+  "managementReviewsReference": {
+    "pdfPage": 5,
+    "documentPage": "05",
+    "section": "How to approach return to play for the cricket player"
+  },
+  "stages": [
+    {
+      "id": "ready",
+      "order": 1,
+      "label": "Ready",
+      "timing": "0 to 6 weeks",
+      "purpose": "Healing and recovery after birth.",
+      "guidance": [
+        "Begin early pelvic floor activation under appropriate guidance.",
+        "Support psychological adjustment to life as a mother.",
+        "Gradually increase exercise tolerance, beginning with gentle walking and progressing as able under medical-team guidance."
+      ],
+      "reference": {
+        "pdfPage": 6,
+        "documentPage": "06",
+        "section": "The 6 Rs - Ready"
+      }
+    },
+    {
+      "id": "review",
+      "order": 2,
+      "label": "Review",
+      "timing": "6 to 8 weeks",
+      "purpose": "Coordinate external and internal health, wellbeing, and practical reviews.",
+      "guidance": [
+        "Obtain an obstetrician or general-practitioner review and clearance, including wound review.",
+        "Arrange a pelvic floor assessment with a Women's Health Physiotherapist.",
+        "Review bloods, including iron, with the cricket doctor.",
+        "Address relevant musculoskeletal issues with the physiotherapist.",
+        "Begin a graduated introduction to strength training with the Strength and Conditioning Coach.",
+        "Review psychological stressors, including possible birth trauma.",
+        "Review energy availability and practical nutrition needs, particularly when breastfeeding.",
+        "Consider childcare, social support, and feeding or pumping facilities.",
+        "Introduce comfortable non-ballistic aerobic activity and graded strength training.",
+        "Review sports-bra fit."
+      ],
+      "reference": {
+        "pdfPage": 6,
+        "documentPage": "06",
+        "section": "The 6 Rs - Review"
+      }
+    },
+    {
+      "id": "restore",
+      "order": 3,
+      "label": "Restore",
+      "timing": "8 to 16 weeks",
+      "purpose": "Prepare for return to a structured training environment.",
+      "guidance": [
+        "Use a graduated return-to-run program developed with Women's Health Physiotherapy and the medical and performance team.",
+        "Establish social supports and training flexibility.",
+        "Recognise and address fatigue, recovery, childcare, mental-health, and physical barriers to return."
+      ],
+      "reference": {
+        "pdfPage": 6,
+        "documentPage": "06",
+        "section": "The 6 Rs - Restore"
+      }
+    },
+    {
+      "id": "recondition",
+      "order": 4,
+      "label": "Recondition",
+      "timing": "12 to 16 weeks and later",
+      "purpose": "Build toward sport-specific training load and a sustained return to play.",
+      "guidance": [
+        "Use reconditioning and graded exposure toward a sport-specific training load.",
+        "Account for time away from training and musculoskeletal overuse-injury risks in programming."
+      ],
+      "reference": {
+        "pdfPage": 6,
+        "documentPage": "06",
+        "section": "The 6 Rs - Recondition"
+      }
+    },
+    {
+      "id": "return",
+      "order": 5,
+      "label": "Return",
+      "timing": "No fixed window stated",
+      "purpose": "Return to play.",
+      "guidance": ["The player returns to play."],
+      "reference": {
+        "pdfPage": 6,
+        "documentPage": "06",
+        "section": "The 6 Rs - Return"
+      }
+    },
+    {
+      "id": "refine",
+      "order": 6,
+      "label": "Refine",
+      "timing": "Ongoing after return",
+      "purpose": "Continue monitoring and adapt practical support.",
+      "guidance": [
+        "Continue reviewing social support and practical training and travel requirements.",
+        "Monitor musculoskeletal and pelvic floor symptoms.",
+        "Use a whole-system approach to sleep, recovery, and low energy availability."
+      ],
+      "reference": {
+        "pdfPage": 6,
+        "documentPage": "06",
+        "section": "The 6 Rs - Refine"
+      }
+    }
+  ]
+}

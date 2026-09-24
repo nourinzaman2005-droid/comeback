@@ -179,6 +179,14 @@ button {
   color: rgba(255, 255, 255, 0.58);
   font-size: 11px;
 }
+.quote-card a {
+  display: block;
+  width: fit-content;
+  margin-top: 8px;
+  color: var(--rose-200);
+  font-size: 10px;
+  text-underline-offset: 3px;
+}
 
 .product-panel {
   position: relative;

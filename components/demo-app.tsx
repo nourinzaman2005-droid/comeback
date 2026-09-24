@@ -87,6 +87,13 @@ export function DemoApp() {
             her country.
           </p>
           <span>Jay Shah, ICC Chairman</span>
+          <a
+            href="https://www.icc-cricket.com/media-releases/icc-launches-return-to-play-post-pregnancy-guidelines-for-female-cricketers"
+            target="_blank"
+            rel="noreferrer"
+          >
+            ICC media release, 22 June 2026
+          </a>
         </div>
       </aside>
 

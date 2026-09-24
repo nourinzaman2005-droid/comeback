@@ -543,17 +543,21 @@ gantt
 ## 11. Current Status
 
 - **Date:** 24 Sep 2026
-- **Phase:** Tier 0 foundation in progress. The local Next.js prototype now has a complete player-facing readiness-check demo flow.
+- **Phase:** Tier 0 is locally complete except for GitHub push, deployment, and phone verification. Tier 1 primary-source extraction has started.
 - **Completed locally:**
   - Next.js, TypeScript, Tailwind CSS, ESLint, Vitest, and Playwright dependencies configured.
   - Responsive PWA shell and manifest created, with a minimal production service worker.
   - Player dashboard, 6 Rs roadmap, camera setup, simulated pose-test screen, symptom check-in, result, and clinician-review gate implemented.
   - Safety and privacy messaging included. The prototype never presents a medical-clearance decision.
   - Team ownership documented in `docs/TEAM_TASKS.md`.
+  - Official nine-page ICC guideline reviewed and its 6 Rs content extracted to `content/guidelines/icc-2026.json` with page and section references.
+  - Content validation tests explicitly prevent presenting the ICC framework as a complete automated medical-clearance protocol.
+- **Research correction:** The official ICC document provides stage windows and general guidance but does not define camera-test pass thresholds or a complete automated clearance algorithm. Readiness tests and thresholds must be attributed to separate primary clinical sources and must not be presented as ICC criteria.
 - **Repository status:** GitHub authentication is currently for `ahammadshawki8`, so the private repository cannot yet be created under `nourinzaman2005-droid`. Nourin must authenticate GitHub CLI on this machine before the prepared commit can be pushed to her profile.
-- **Next task:** Authenticate as Nourin and push the private repository, complete Tier 0 deployment/CI exit criteria, then begin Tier 1 by reading the primary ICC guideline PDF before implementing health rules.
+- **Next task:** Authenticate as Nourin and push the private repository, deploy and verify the PWA on a phone, then verify postnatal readiness tests against their original clinical source before implementing any deterministic health rules.
 - **Decisions log:**
   - 24 Sep 2026: Problem statement 3 chosen. ComeBack idea locked after two research rounds (11 ideas evaluated).
   - 24 Sep 2026: Stack decided (Section 7.1). LLM never decides progression.
   - 24 Sep 2026: Player demo flow prioritised for a clear two-minute video: today view, guided test, symptom check, result, clinician review.
   - 24 Sep 2026: Nourin owns the player experience and demo narrative. Ashra owns guideline/rules validation, clinician workflow, backend security, and evidence. Both review safety wording and submission assets.
+  - 24 Sep 2026: ICC guidance and externally sourced readiness-test protocols will remain separate in the data model and UI citations.
