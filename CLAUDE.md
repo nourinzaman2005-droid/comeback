@@ -212,18 +212,18 @@ Summary from secondary sources. VERIFY against the original document before impl
 
 ### 7.1 Tech stack (decided; change only with user approval)
 
-| Layer             | Choice                                                                               | Why                                                                                             |
-| ----------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| Frontend          | Next.js (App Router) + TypeScript + Tailwind CSS, installable PWA                    | One codebase for player and clinician views, works on phones, offline via service worker        |
-| Pose estimation   | MediaPipe Tasks Vision `PoseLandmarker` (WASM, runs in the browser, in a Web Worker) | On-device, free, video never leaves the phone                                                   |
-| Local storage     | IndexedDB via Dexie                                                                  | Offline-first                                                                                   |
-| Backend           | Supabase (Postgres, Auth, Row Level Security, Edge Functions)                        | Fast to build, RLS for health data, free tier                                                   |
-| Rules engine      | Pure TypeScript module, deterministic, fully unit tested                             | Safety: progression logic is predictable and auditable                                          |
-| Guideline content | Structured JSON extracted from the ICC PDF, with section references                  | Traceable citations                                                                             |
-| AI layer          | Claude API (claude-sonnet-5) via server route                                        | Plain-language explanations, personalisation of wording, translation. Never decides progression |
-| i18n              | next-intl, locales: en, hi, ur (RTL), bn                                             | Multi-language requirement                                                                      |
-| Hosting           | Vercel (frontend) + Supabase cloud                                                   | Free tiers, quick deploy                                                                        |
-| Testing           | Vitest (unit), Playwright (e2e)                                                      | Rules engine and flows must be tested                                                           |
+| Layer             | Choice                                                                               | Why                                                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Frontend          | Next.js (App Router) + TypeScript + Tailwind CSS, installable PWA                    | One codebase for player and clinician views, works on phones, offline via service worker                      |
+| Pose estimation   | MediaPipe Tasks Vision `PoseLandmarker` (WASM, runs in the browser, in a Web Worker) | On-device, free, video never leaves the phone                                                                 |
+| Local storage     | IndexedDB via Dexie                                                                  | Offline-first                                                                                                 |
+| Backend           | Supabase (Postgres, Auth, Row Level Security, Edge Functions)                        | Fast to build, RLS for health data, free tier                                                                 |
+| Rules engine      | Pure TypeScript module, deterministic, fully unit tested                             | Safety: progression logic is predictable and auditable                                                        |
+| Guideline content | Structured JSON extracted from the ICC PDF, with section references                  | Traceable citations                                                                                           |
+| AI layer          | Groq API via server route                                                            | Free-tier plain-language explanations, personalisation of wording, and translation. Never decides progression |
+| i18n              | next-intl, locales: en, hi, ur (RTL), bn                                             | Multi-language requirement                                                                                    |
+| Hosting           | Vercel (frontend) + Supabase cloud                                                   | Free tiers, quick deploy                                                                                      |
+| Testing           | Vitest (unit), Playwright (e2e)                                                      | Rules engine and flows must be tested                                                                         |
 
 ### 7.2 System architecture
 
@@ -244,7 +244,7 @@ flowchart TB
 
     subgraph Cloud["Cloud"]
         API["Next.js server routes"]
-        LLM["Claude API<br/>explain, personalise wording, translate"]
+        LLM["Groq API<br/>explain, personalise wording, translate"]
         subgraph SB["Supabase"]
             AUTH["Auth"]
             DB["Postgres + RLS<br/>metrics only, no video"]
@@ -384,7 +384,7 @@ erDiagram
 /lib/pose             MediaPipe worker, landmark smoothing, metric calculators
 /lib/rules            6 Rs state machine, test pass criteria, red-flag rules
 /lib/sync             Dexie schema, sync queue, Supabase client
-/lib/ai               Claude API client, prompt templates
+/lib/ai               Groq API client, prompt templates
 /content/guidelines   icc-2026.json (extracted, with section refs), tests.json
 /messages             i18n files: en.json, hi.json, ur.json, bn.json
 /supabase             migrations, RLS policies, edge functions
@@ -458,7 +458,7 @@ gantt
 
 ### Tier 5: AI layer and multi-language (Days 6 to 7)
 
-- Claude API route: plain-language explanation of the current stage and results, grounded only in guideline JSON with citations.
+- Groq API route: plain-language explanation of the current stage and results, grounded only in guideline JSON with citations.
 - Translations: en, hi, ur (RTL), bn for UI strings; AI explanations in the chosen language.
 - Guardrails: AI output cannot change stage; refuses medical clearance questions and redirects to clinician.
 - **Exit:** same flow demoable in English and one other language.
@@ -543,7 +543,7 @@ gantt
 ## 11. Current Status
 
 - **Date:** 24 Sep 2026
-- **Phase:** Tier 0 is locally complete except for GitHub push, deployment, and phone verification. Tier 1 primary-source extraction has started.
+- **Phase:** Tier 0 complete. Tier 1 primary-source extraction and deterministic rules work are next.
 - **Completed locally:**
   - Next.js, TypeScript, Tailwind CSS, ESLint, Vitest, and Playwright dependencies configured.
   - Responsive PWA shell and manifest created, with a minimal production service worker.
@@ -551,11 +551,12 @@ gantt
   - Safety and privacy messaging included. The prototype never presents a medical-clearance decision.
   - Team ownership documented in `docs/TEAM_TASKS.md`.
   - Production PWA behavior verified in an automated Pixel-sized browser: full readiness demo, responsive width, manifest, and active service worker.
+  - Production deployed over HTTPS at `https://comeback-neon.vercel.app` on Vercel's free tier.
   - Official nine-page ICC guideline reviewed and its 6 Rs content extracted to `content/guidelines/icc-2026.json` with page and section references.
   - Content validation tests explicitly prevent presenting the ICC framework as a complete automated medical-clearance protocol.
 - **Research correction:** The official ICC document provides stage windows and general guidance but does not define camera-test pass thresholds or a complete automated clearance algorithm. Readiness tests and thresholds must be attributed to separate primary clinical sources and must not be presented as ICC criteria.
 - **Repository status:** Private repository created at `https://github.com/nourinzaman2005-droid/comeback`. The local `main` branch tracks `origin/main`, and CI runs on pushes and pull requests.
-- **Next task:** Complete the pending Vercel browser authentication and deploy over HTTPS, then verify postnatal readiness tests against their original clinical source before implementing any deterministic health rules.
+- **Next task:** Verify postnatal readiness tests against their original clinical source before implementing any deterministic health rules.
 - **Decisions log:**
   - 24 Sep 2026: Problem statement 3 chosen. ComeBack idea locked after two research rounds (11 ideas evaluated).
   - 24 Sep 2026: Stack decided (Section 7.1). LLM never decides progression.
@@ -563,3 +564,5 @@ gantt
   - 24 Sep 2026: Nourin owns the player experience and demo narrative. Ashra owns guideline/rules validation, clinician workflow, backend security, and evidence. Both review safety wording and submission assets.
   - 24 Sep 2026: ICC guidance and externally sourced readiness-test protocols will remain separate in the data model and UI citations.
   - 24 Sep 2026: Private GitHub repository created under Nourin's account and the initial prototype pushed to `main`.
+  - 25 Sep 2026: Tier 0 completed with a live Vercel deployment and mobile PWA CI coverage.
+  - 25 Sep 2026: User approved Groq's free API tier in place of the previously planned paid Claude API.

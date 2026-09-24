@@ -57,5 +57,5 @@ test("production PWA registers its local service worker", async ({ page }) => {
     const registration = await navigator.serviceWorker.getRegistration();
     return registration?.scope;
   });
-  expect(registrationScope).toBe("http://127.0.0.1:3000/");
+  expect(registrationScope).toBe(`${new URL(page.url()).origin}/`);
 });
