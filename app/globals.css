@@ -37,6 +37,35 @@ a {
 button {
   color: inherit;
 }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  left: 12px;
+  top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: white;
+  background: var(--plum-950);
+  transform: translateY(-150%);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid #c2629c;
+  outline-offset: 3px;
+}
 .brand-button {
   border: 0;
   background: transparent;
@@ -207,6 +236,17 @@ button {
   font-weight: 800;
   text-decoration: none;
 }
+.language-picker select {
+  min-height: 38px;
+  max-width: 76px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--plum-700);
+  background: white;
+  font-size: 10px;
+  font-weight: 800;
+}
 .status-strip {
   margin: -16px 0 20px;
   display: flex;
@@ -238,6 +278,98 @@ button {
 .stage-status.held {
   color: #943e4a;
   background: #f9e4e7;
+}
+.ai-guide {
+  margin-top: 15px;
+  padding: 16px;
+  border: 1px solid #ead9e2;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fff, #faf0f7);
+}
+.ai-guide-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ai-guide-heading > span {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: white;
+  background: var(--plum-700);
+}
+.ai-guide-heading > div {
+  flex: 1;
+  display: grid;
+}
+.ai-guide-heading small {
+  color: var(--plum-500);
+  font-size: 8px;
+  font-weight: 800;
+}
+.ai-guide-heading strong {
+  color: var(--plum-950);
+  font-size: 12px;
+}
+.ai-guide-heading button,
+.ai-question button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 10px;
+  color: white;
+  background: var(--plum-700);
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.ai-answer {
+  margin-top: 13px;
+  padding: 13px;
+  display: grid;
+  gap: 7px;
+  border-radius: 13px;
+  background: white;
+}
+.ai-answer p {
+  margin: 0;
+  color: #5f4d5a;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.ai-answer small {
+  color: var(--plum-500);
+  font-size: 8px;
+}
+.ai-answer strong {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--sage);
+  font-size: 9px;
+  line-height: 1.4;
+}
+.ai-question {
+  margin-top: 11px;
+  display: flex;
+  gap: 7px;
+}
+.ai-question input {
+  min-width: 0;
+  min-height: 36px;
+  flex: 1;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  font-size: 9px;
+}
+.ai-boundary {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 8px;
 }
 .clinician-card a {
   width: 37px;
@@ -496,6 +628,77 @@ button {
   font-size: 9px;
   line-height: 1.45;
 }
+.privacy-card a {
+  width: fit-content;
+  color: var(--plum-700);
+  font-size: 9px;
+  font-weight: 800;
+}
+.policy-shell {
+  min-height: 100dvh;
+  padding: clamp(20px, 6vw, 70px);
+  background:
+    radial-gradient(circle at 10% 10%, #f8d8d2, transparent 30%),
+    #f7eff2;
+}
+.policy-card {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: clamp(24px, 6vw, 55px);
+  border: 1px solid white;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow);
+}
+.policy-card > a {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--plum-700);
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.policy-icon {
+  width: 55px;
+  height: 55px;
+  margin: 34px 0 15px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  color: white;
+  background: var(--plum-700);
+}
+.policy-card h1 {
+  max-width: 600px;
+  margin: 7px 0 17px;
+  color: var(--plum-950);
+  font: 600 clamp(31px, 6vw, 48px)/1.08 var(--font-display), serif;
+  letter-spacing: -0.04em;
+}
+.policy-card h2 {
+  margin: 25px 0 7px;
+  color: var(--plum-950);
+  font: 600 19px var(--font-display), serif;
+}
+.policy-card > p:not(.eyebrow) {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.policy-boundary {
+  margin-top: 28px;
+  padding: 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-radius: 14px;
+  color: var(--sage);
+  background: #edf7f2;
+  font-size: 10px;
+  line-height: 1.5;
+}
 
 .clinician-shell {
   min-height: 100dvh;
@@ -550,7 +753,7 @@ button {
   border-right: 1px solid var(--line);
   background: #fff;
 }
-.player-list h1 {
+.player-list h2 {
   margin: 5px 0;
   color: var(--plum-950);
   font: 600 27px var(--font-display), serif;
@@ -800,6 +1003,9 @@ button {
 .decision-card h3 {
   margin: 5px 0;
   font: 600 20px var(--font-display), serif;
+}
+.decision-card .eyebrow {
+  color: var(--rose-200);
 }
 .decision-card > div > p {
   margin: 0;
@@ -1108,7 +1314,7 @@ button {
   font-size: 12px;
   font-weight: 650;
 }
-.welcome-row h2,
+.welcome-row h1,
 .screen-header h2,
 .result-screen h2 {
   margin: 0;
@@ -1159,7 +1365,7 @@ button {
   align-items: center;
   justify-content: space-between;
 }
-.stage-heading h3,
+.stage-heading h2,
 .section-title h3 {
   margin: 0;
   font:
@@ -1928,6 +2134,13 @@ button {
 .camera-boundary svg {
   flex: none;
 }
+.accuracy-boundary {
+  margin: -7px 0 0;
+  color: #8d7d87;
+  font-size: 8px;
+  line-height: 1.4;
+  text-align: center;
+}
 .feeling-card {
   padding: 25px;
   border: 1px solid #efdee4;
@@ -2179,7 +2392,7 @@ button {
   .screen {
     padding: 24px 18px 92px;
   }
-  .welcome-row h2,
+  .welcome-row h1,
   .screen-header h2,
   .result-screen h2 {
     font-size: 27px;
@@ -2239,7 +2452,7 @@ button {
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
-  .player-list h1,
+  .player-list h2,
   .player-list > p {
     display: none;
   }

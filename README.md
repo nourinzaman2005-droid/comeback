@@ -22,3 +22,5 @@ npm run build
 ```
 
 See `docs/TEAM_TASKS.md` for contributor ownership, `docs/TIER_3_4.md` for the optional free Supabase deployment, and `CLAUDE.md` for project decisions and safety rules.
+
+The cited Groq explanation layer and localisation guardrails are documented in `docs/TIER_5_6.md`. A Groq key is optional because the safe grounded fallback remains functional without one.

@@ -1,0 +1,23 @@
+{
+  "personas": [
+    {
+      "id": "nourin-pace-bowler",
+      "name": "Nourin",
+      "role": "Pace bowler",
+      "weeksPostpartum": 16,
+      "deliveryType": "Caesarean",
+      "stage": "Restore",
+      "story": "Returning to structured training with a symptom-free camera check-in ready for clinician review."
+    },
+    {
+      "id": "ashra-wicketkeeper",
+      "name": "Ashra",
+      "role": "Wicketkeeper",
+      "weeksPostpartum": 10,
+      "deliveryType": "Vaginal",
+      "stage": "Review",
+      "story": "Reports pelvic heaviness so the stage remains held for a care-team conversation."
+    }
+  ],
+  "notice": "Fictional demonstration data only. These personas are not clinical cases."
+}

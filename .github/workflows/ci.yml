@@ -34,8 +34,11 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Install mobile browser
+      - name: Check submission file sizes
+        run: npm run check:files
+
+      - name: Install browser
         run: npx playwright install --with-deps chromium
 
-      - name: Run mobile journey tests
+      - name: Run mobile and desktop journeys
         run: npm run test:e2e

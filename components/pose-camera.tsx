@@ -298,6 +298,10 @@ export function PoseCamera({
         <LockKeyhole size={15} /> Measurements describe movement only. They do
         not score readiness or provide medical clearance.
       </p>
+      <p className="accuracy-boundary">
+        Prototype measurement note: manual-count validation on a physical
+        Android phone is still pending.
+      </p>
     </div>
   );
 }

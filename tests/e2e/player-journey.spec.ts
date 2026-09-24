@@ -41,7 +41,7 @@ test("player completes the guided journey and clinician approval advances the st
   await expect(clinician.getByText(/Nourin is now in Recondition/)).toBeVisible();
 
   await page.getByRole("button", { name: /Back to today/ }).click();
-  await expect(page.locator(".stage-card h3")).toHaveText("Recondition");
+  await expect(page.locator(".stage-card h2")).toHaveText("Recondition");
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
@@ -98,4 +98,21 @@ test("new player can complete consent onboarding without the demo shortcut", asy
   await page.getByRole("button", { name: "Profile", exact: true }).click();
   await expect(page.getByText("caesarean", { exact: true })).toBeVisible();
   await expect(page.getByText("bowler", { exact: true })).toBeVisible();
+});
+
+test("player can complete the core flow in Bengali with grounded AI guardrails", async ({
+  page,
+}) => {
+  await openDemo(page);
+  await page.getByLabel("Language").selectOption("bn");
+  await expect(page.getByRole("heading", { name: "স্বাগতম, Nourin" })).toBeVisible();
+  await page.getByPlaceholder("এই ধাপ সম্পর্কে জিজ্ঞাসা করুন").fill("আমি কি খেলতে নিরাপদ?");
+  await page.getByRole("button", { name: "জিজ্ঞাসা করুন" }).click();
+  await expect(page.getByText(/আমি চিকিৎসাগত ছাড়পত্র দিতে/)).toBeVisible();
+  await page.getByRole("button", { name: /ক্যামেরা-নির্দেশিত চেক-ইন/ }).click();
+  await expect(page.getByRole("heading", { name: "নিরাপদভাবে প্রস্তুত হোন" })).toBeVisible();
+  await page.getByRole("button", { name: /ব্যক্তিগত ক্যামেরা খুলুন/ }).click();
+  await page.getByRole("button", { name: /উপসর্গে এগিয়ে যান/ }).click();
+  await page.getByRole("button", { name: /উপসর্গহীন চেক-ইন সংরক্ষণ করুন/ }).click();
+  await expect(page.getByRole("heading", { name: "ধন্যবাদ, Nourin" })).toBeVisible();
 });

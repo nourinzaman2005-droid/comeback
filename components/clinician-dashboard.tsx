@@ -90,6 +90,7 @@ export function ClinicianDashboard() {
 
   return (
     <main className="clinician-shell">
+      <h1 className="sr-only">Clinical care dashboard</h1>
       <header className="clinician-topbar">
         <div><span className="clinician-logo"><Stethoscope size={21} /></span><p><strong>ComeBack Clinical</strong><span>Demo workspace</span></p></div>
         <Link href="/"><ArrowLeft size={17} /> Player view</Link>
@@ -97,7 +98,7 @@ export function ClinicianDashboard() {
       <div className="clinician-layout">
         <aside className="player-list">
           <span className="eyebrow">Linked players</span>
-          <h1>Care overview</h1>
+          <h2>Care overview</h2>
           <p>Only players linked to this clinician appear here.</p>
           {profiles.length === 0 && <div className="empty-clinician"><UserRound size={26} /><strong>No local player yet</strong><span>Open player view and choose the demo.</span></div>}
           {profiles.map((item) => {

@@ -24,9 +24,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import guideline from "@/content/guidelines/icc-2026.json";
 import testGuideline from "@/content/guidelines/tests.json";
+import type { Language, StageExplanation } from "@/lib/ai/explanation";
 import {
   getAllValues,
   getValue,
+  clearLocalData,
   putValue,
   saveWithQueue,
   subscribeToData,
@@ -39,11 +41,13 @@ import {
   TestRecord,
 } from "@/lib/data/types";
 import type { CameraMetrics, TestKind } from "@/lib/pose/types";
+import { UI_COPY, type UiKey } from "@/lib/i18n/ui";
 import { Onboarding } from "./onboarding";
 import { PoseCamera } from "./pose-camera";
 import { ServiceWorkerRegister } from "./service-worker-register";
 
 type Page = "home" | "journey" | "setup" | "test" | "symptoms" | "result" | "support" | "profile";
+type UiStrings = Record<UiKey, string>;
 
 const symptomOptions = testGuideline.symptomStops;
 
@@ -60,9 +64,11 @@ function weeksSince(date: string) {
   return Math.max(0, Math.floor(elapsed / (7 * 24 * 60 * 60 * 1000)));
 }
 
-function Shell({ children, page, setPage, profile }: { children: React.ReactNode; page: Page; setPage: (page: Page) => void; profile: PlayerProfile }) {
+function Shell({ children, page, setPage, profile, onLanguage }: { children: React.ReactNode; page: Page; setPage: (page: Page) => void; profile: PlayerProfile; onLanguage: (language: Language) => void }) {
+  const t = UI_COPY[profile.language];
   return (
-    <main className="app-shell">
+    <main className="app-shell" dir={profile.language === "ur" ? "rtl" : "ltr"}>
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <ServiceWorkerRegister />
       <aside className="story-panel" aria-label="ComeBack introduction">
         <button className="brand brand-light brand-button" onClick={() => setPage("home")}><span className="brand-mark">C</span><span>ComeBack</span></button>
@@ -77,14 +83,14 @@ function Shell({ children, page, setPage, profile }: { children: React.ReactNode
       <section className="product-panel">
         <header className="topbar">
           <button className="mobile-brand" onClick={() => setPage("home")} aria-label="Go home"><span className="brand-mark">C</span><span>ComeBack</span></button>
-          <div className="top-actions"><Link className="clinician-link" href="/clinician"><Stethoscope size={16} /> Clinician view</Link><button className="icon-button" aria-label="Notifications"><Bell size={20} /></button><button className="avatar" onClick={() => setPage("profile")} aria-label="Open profile">{profile.name.slice(0, 2).toUpperCase()}</button></div>
+          <div className="top-actions"><label className="language-picker"><span className="sr-only">Language</span><select value={profile.language} onChange={(event) => onLanguage(event.target.value as Language)} aria-label="Language"><option value="en">EN</option><option value="bn">বাংলা</option><option value="hi">हिंदी</option><option value="ur">اردو</option></select></label><Link className="clinician-link" href="/clinician"><Stethoscope size={16} /> {t.clinicianView}</Link><button className="icon-button" aria-label="Notifications"><Bell size={20} /></button><button className="avatar" onClick={() => setPage("profile")} aria-label="Open profile">{profile.name.slice(0, 2).toUpperCase()}</button></div>
         </header>
-        <div className="screen" aria-live="polite">{children}</div>
+        <div className="screen" id="main-content" aria-live="polite">{children}</div>
         <nav className="bottom-nav" aria-label="Primary navigation">
-          <button className={page === "home" ? "active" : ""} onClick={() => setPage("home")}><Home size={21} /><span>Today</span></button>
-          <button className={page === "journey" ? "active" : ""} onClick={() => setPage("journey")}><Target size={21} /><span>Journey</span></button>
-          <button className={page === "support" ? "active" : ""} onClick={() => setPage("support")}><MessageCircleMore size={21} /><span>Support</span></button>
-          <button className={page === "profile" ? "active" : ""} onClick={() => setPage("profile")}><CircleUserRound size={21} /><span>Profile</span></button>
+          <button className={page === "home" ? "active" : ""} onClick={() => setPage("home")}><Home size={21} /><span>{t.today}</span></button>
+          <button className={page === "journey" ? "active" : ""} onClick={() => setPage("journey")}><Target size={21} /><span>{t.journey}</span></button>
+          <button className={page === "support" ? "active" : ""} onClick={() => setPage("support")}><MessageCircleMore size={21} /><span>{t.support}</span></button>
+          <button className={page === "profile" ? "active" : ""} onClick={() => setPage("profile")}><CircleUserRound size={21} /><span>{t.profile}</span></button>
         </nav>
       </section>
     </main>
@@ -131,6 +137,15 @@ export function PlayerApp() {
     };
   }, [load]);
 
+  useEffect(() => {
+    if (!profile) return;
+    document.documentElement.lang = profile.language;
+    document.documentElement.dir = profile.language === "ur" ? "rtl" : "ltr";
+    return () => {
+      document.documentElement.dir = "ltr";
+    };
+  }, [profile]);
+
   const saveProfile = async (next: PlayerProfile) => {
     await saveWithQueue("profile", "profiles", next);
     setProfile(next);
@@ -174,29 +189,54 @@ export function PlayerApp() {
   if (!loaded) return <main className="loading-screen"><span className="camera-spinner" /><strong>Opening your private journey</strong></main>;
   if (!profile) return <Onboarding onComplete={saveProfile} />;
 
+  const t = UI_COPY[profile.language];
+  const changeLanguage = async (language: Language) => {
+    const next = { ...profile, language, updatedAt: new Date().toISOString() };
+    await saveWithQueue("profile", "profiles", next);
+    setProfile(next);
+  };
+
   return (
-    <Shell profile={profile} page={page} setPage={setPage}>
+    <Shell profile={profile} page={page} setPage={setPage} onLanguage={changeLanguage}>
       {page === "home" && <Today profile={profile} latest={latest} online={online} sync={sync} onStart={() => setPage("setup")} />}
       {page === "journey" && <Journey profile={profile} />}
-      {page === "setup" && <Setup onBack={() => setPage("home")} onNext={() => setPage("test")} />}
-      {page === "test" && <Test onBack={() => setPage("setup")} onNext={() => setPage("symptoms")} onMetrics={captureMetrics} />}
-      {page === "symptoms" && <Symptoms values={symptoms} onChange={setSymptoms} onBack={() => setPage("test")} onNext={completeCheckIn} />}
-      {page === "result" && <Result profile={profile} record={latest} onHome={() => setPage("home")} />}
+      {page === "setup" && <Setup t={t} onBack={() => setPage("home")} onNext={() => setPage("test")} />}
+      {page === "test" && <Test t={t} onBack={() => setPage("setup")} onNext={() => setPage("symptoms")} onMetrics={captureMetrics} />}
+      {page === "symptoms" && <Symptoms t={t} values={symptoms} onChange={setSymptoms} onBack={() => setPage("test")} onNext={completeCheckIn} />}
+      {page === "result" && <Result t={t} profile={profile} record={latest} onHome={() => setPage("home")} />}
       {page === "support" && <Support profile={profile} />}
-      {page === "profile" && <Profile profile={profile} onReset={async () => { await putValue("profiles", { ...profile, name: profile.name }); indexedDB.deleteDatabase("comeback-data"); location.reload(); }} />}
+      {page === "profile" && <Profile profile={profile} onReset={async () => { await clearLocalData(); location.reload(); }} />}
     </Shell>
   );
 }
 
 function Today({ profile, latest, online, sync, onStart }: { profile: PlayerProfile; latest: TestRecord | null; online: boolean; sync: SyncSummary; onStart: () => void }) {
   const stageIndex = STAGES.indexOf(profile.stage);
+  const t = UI_COPY[profile.language];
+  const [explanation, setExplanation] = useState<StageExplanation | null>(null);
+  const [question, setQuestion] = useState("");
+  const [explaining, setExplaining] = useState(false);
+  const explain = async () => {
+    setExplaining(true);
+    try {
+      const response = await fetch("/api/explain", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage: profile.stage, language: profile.language, question }),
+      });
+      if (response.ok) setExplanation(await response.json());
+    } finally {
+      setExplaining(false);
+    }
+  };
   return <div className="home-screen">
     <div className="status-strip"><span className={online ? "online" : "offline"}>{online ? <Wifi size={13} /> : <CloudOff size={13} />}{online ? "Online" : "Offline ready"}</span><span>{sync.mode === "local-demo" ? "Private demo storage" : `${sync.pending} awaiting sync`}</span></div>
-    <div className="welcome-row"><div><p className="soft-label">Your return plan</p><h2>Welcome back, {profile.name}</h2><p>One clear step at a time, with your care team in control.</p></div><div className="week-badge"><strong>{weeksSince(profile.deliveryDate)}</strong><span>weeks</span></div></div>
-    <section className="stage-card"><div className="stage-heading"><div><span className="eyebrow">Your current stage</span><h3>{profile.stage}</h3></div><span className={`stage-status ${profile.stageStatus}`}>{profile.stageStatus.replace("-", " ")}</span></div><div className="roadmap" aria-label="Six Rs journey">{STAGES.map((stage, index) => <div className={`roadmap-item ${index < stageIndex ? "done" : index === stageIndex ? "current" : "next"}`} key={stage}><span className="roadmap-dot">{index < stageIndex ? <Check size={13} strokeWidth={3} /> : index + 1}</span><span>{stage}</span></div>)}</div><p className="stage-note"><Sparkles size={17} /> Your stage only changes after your linked clinician approves it.</p></section>
-    <div className="section-title"><div><span className="eyebrow">Today&apos;s next step</span><h3>{profile.stageStatus === "awaiting-review" ? "Review pending" : "Readiness check"}</h3></div><span className="time-chip">2 min</span></div>
-    <button className="task-card" onClick={onStart}><span className="task-icon"><Target size={25} /></span><span className="task-copy"><strong>Camera-guided check-in</strong><small>{latest ? `Last saved ${new Date(latest.completedAt).toLocaleDateString()}` : "Four movement options, then symptoms"}</small></span><span className="round-arrow"><ArrowRight size={20} /></span></button>
-    <section className="clinician-card"><span className="clinician-avatar"><Stethoscope size={23} /></span><div><small>Your clinician</small><strong>{profile.clinicianName}</strong><span><i /> Connected for demo review</span></div><Link href="/clinician" aria-label="Open clinician dashboard"><ChevronRight size={20} /></Link></section>
+    <div className="welcome-row"><div><p className="soft-label">{t.returnPlan}</p><h1>{t.welcomeBack}, {profile.name}</h1><p>{t.homeIntro}</p></div><div className="week-badge"><strong>{weeksSince(profile.deliveryDate)}</strong><span>weeks</span></div></div>
+    <section className="stage-card"><div className="stage-heading"><div><span className="eyebrow">{t.currentStage}</span><h2>{profile.stage}</h2></div><span className={`stage-status ${profile.stageStatus}`}>{profile.stageStatus.replace("-", " ")}</span></div><div className="roadmap" aria-label="Six Rs journey">{STAGES.map((stage, index) => <div className={`roadmap-item ${index < stageIndex ? "done" : index === stageIndex ? "current" : "next"}`} key={stage}><span className="roadmap-dot">{index < stageIndex ? <Check size={13} strokeWidth={3} /> : index + 1}</span><span>{stage}</span></div>)}</div><p className="stage-note"><Sparkles size={17} /> {t.stageGate}</p></section>
+    <section className="ai-guide"><div className="ai-guide-heading"><span><Sparkles size={19} /></span><div><small>ComeBack Guide</small><strong>{t.explainStage}</strong></div><button onClick={explain} disabled={explaining}>{explaining ? "..." : t.explainStage}</button></div>{explanation && <div className="ai-answer" role="status"><p>{explanation.summary}</p><p>{explanation.nextStep}</p><small>{explanation.citations[0]}</small><strong><ShieldCheck size={14} /> {explanation.safetyNote}</strong></div>}<div className="ai-question"><input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder={t.askPlaceholder} maxLength={300} /><button onClick={explain} disabled={explaining}>{t.ask}</button></div><p className="ai-boundary">{explaining ? t.loadingExplanation : t.aiBoundary}</p></section>
+    <div className="section-title"><div><span className="eyebrow">{t.nextStep}</span><h3>{profile.stageStatus === "awaiting-review" ? t.awaitingReview : t.cameraCheck}</h3></div><span className="time-chip">2 min</span></div>
+    <button className="task-card" onClick={onStart}><span className="task-icon"><Target size={25} /></span><span className="task-copy"><strong>{t.cameraCheck}</strong><small>{latest ? `Last saved ${new Date(latest.completedAt).toLocaleDateString()}` : t.cameraDescription}</small></span><span className="round-arrow"><ArrowRight size={20} /></span></button>
+    <section className="clinician-card"><span className="clinician-avatar"><Stethoscope size={23} /></span><div><small>{t.linkedClinician}</small><strong>{profile.clinicianName}</strong><span><i /> Connected for demo review</span></div><Link href="/clinician" aria-label="Open clinician dashboard"><ChevronRight size={20} /></Link></section>
     <p className="medical-note"><ShieldCheck size={16} /> ComeBack supports your care team. It does not provide medical clearance.</p>
   </div>;
 }
@@ -210,22 +250,22 @@ function Journey({ profile }: { profile: PlayerProfile }) {
   return <div className="flow-screen"><Header title="Your 6 Rs roadmap" subtitle="Guidance, timing and your next conversation in one place." /><div className="journey-list">{guideline.stages.map((stage, index) => <section className={`journey-stage ${index === stageIndex ? "current" : ""}`} key={stage.id}><span className="journey-number">{index < stageIndex ? <Check size={16} /> : stage.order}</span><div><div className="journey-heading"><h3>{stage.label}</h3><span>{stage.timing}</span></div><p>{stage.purpose}</p>{index === stageIndex && <ul>{stage.guidance.map((item) => <li key={item}>{item}</li>)}</ul>}<small>ICC guideline, page {stage.reference.pdfPage}, {stage.reference.section}</small></div></section>)}</div><p className="evidence-note"><ShieldCheck size={18} /> The ICC framework guides care-team conversations. It is not an automated clearance protocol.</p></div>;
 }
 
-function Setup({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
-  return <div className="flow-screen"><Header title="Set up safely" subtitle="A good camera angle helps describe movement." onBack={onBack} /><div className="camera-guide"><div className="guide-frame"><div className="person-shape"><span className="head" /><span className="body" /><span className="leg left" /><span className="leg right" /><span className="arm left" /><span className="arm right" /></div><span className="frame-corner tl" /><span className="frame-corner tr" /><span className="frame-corner bl" /><span className="frame-corner br" /><span className="distance-line">about 2 metres</span></div></div><div className="instruction-list"><div><span>1</span><p><strong>Show your whole body</strong><small>Use the front view unless the bridge asks for side view.</small></p></div><div><span>2</span><p><strong>Secure your phone</strong><small>Place it around hip height.</small></p></div><div><span>3</span><p><strong>Clear the floor</strong><small>Stop if you feel pain, heaviness, leaking or concern.</small></p></div></div><button className="primary-button" onClick={onNext}><Camera size={19} /> Open private camera <ArrowRight size={19} /></button><p className="privacy-line"><LockKeyhole size={15} /> Raw video is processed on this device and never saved or uploaded.</p></div>;
+function Setup({ t, onBack, onNext }: { t: UiStrings; onBack: () => void; onNext: () => void }) {
+  return <div className="flow-screen"><Header title={t.setupTitle} subtitle={t.setupSubtitle} onBack={onBack} /><div className="camera-guide"><div className="guide-frame"><div className="person-shape"><span className="head" /><span className="body" /><span className="leg left" /><span className="leg right" /><span className="arm left" /><span className="arm right" /></div><span className="frame-corner tl" /><span className="frame-corner tr" /><span className="frame-corner bl" /><span className="frame-corner br" /><span className="distance-line">about 2 metres</span></div></div><div className="instruction-list"><div><span>1</span><p><strong>Show your whole body</strong><small>Use the front view unless the bridge asks for side view.</small></p></div><div><span>2</span><p><strong>Secure your phone</strong><small>Place it around hip height.</small></p></div><div><span>3</span><p><strong>Clear the floor</strong><small>Stop if you feel pain, heaviness, leaking or concern.</small></p></div></div><button className="primary-button" onClick={onNext}><Camera size={19} /> {t.openCamera} <ArrowRight size={19} /></button><p className="privacy-line"><LockKeyhole size={15} /> Raw video is processed on this device and never saved or uploaded.</p></div>;
 }
 
-function Test({ onBack, onNext, onMetrics }: { onBack: () => void; onNext: () => void; onMetrics: (kind: TestKind, metrics: CameraMetrics) => void }) {
-  return <div className="flow-screen test-flow"><Header title="Movement check-in" subtitle="Choose one test. Counts are observations, not pass or fail." onBack={onBack} /><PoseCamera onMetrics={onMetrics} /><button className="primary-button" onClick={onNext}>Continue to symptoms <ArrowRight size={19} /></button></div>;
+function Test({ t, onBack, onNext, onMetrics }: { t: UiStrings; onBack: () => void; onNext: () => void; onMetrics: (kind: TestKind, metrics: CameraMetrics) => void }) {
+  return <div className="flow-screen test-flow"><Header title={t.movementTitle} subtitle={t.movementSubtitle} onBack={onBack} /><PoseCamera onMetrics={onMetrics} /><button className="primary-button" onClick={onNext}>{t.continueSymptoms} <ArrowRight size={19} /></button></div>;
 }
 
-function Symptoms({ values, onChange, onBack, onNext }: { values: string[]; onChange: (values: string[]) => void; onBack: () => void; onNext: () => void }) {
+function Symptoms({ t, values, onChange, onBack, onNext }: { t: UiStrings; values: string[]; onChange: (values: string[]) => void; onBack: () => void; onNext: () => void }) {
   const toggle = (code: string) => onChange(values.includes(code) ? values.filter((value) => value !== code) : [...values, code]);
-  return <div className="flow-screen"><Header title="How did that feel?" subtitle="Symptoms always matter more than a camera observation." onBack={onBack} /><div className="feeling-card"><span className="heart-icon"><HeartHandshake size={28} /></span><h3>Select anything you noticed during or after the movement.</h3><div className="symptom-check-grid">{symptomOptions.map((symptom) => <label className={values.includes(symptom.code) ? "checked" : ""} key={symptom.code}><input type="checkbox" checked={values.includes(symptom.code)} onChange={() => toggle(symptom.code)} /><span>{symptom.label}</span></label>)}</div></div>{values.length > 0 && <div className="red-flag-note" role="alert"><Pause size={20} /><p><strong>Pause this stage and contact your care team.</strong><span>Your answers will be highlighted for clinician review.</span></p></div>}<button className="primary-button" onClick={onNext}>{values.length ? "Save and request review" : "Save symptom-free check-in"}<ArrowRight size={19} /></button><div className="citation"><ShieldCheck size={18} /><p><strong>Complete symptom screen</strong><span>Goom, Donnelly and Brockwell 2019, pages 10, 13 and 14. Level 4 expert consensus.</span></p></div></div>;
+  return <div className="flow-screen"><Header title={t.symptomsTitle} subtitle={t.symptomsSubtitle} onBack={onBack} /><div className="feeling-card"><span className="heart-icon"><HeartHandshake size={28} /></span><h3>{t.symptomsPrompt}</h3><div className="symptom-check-grid">{symptomOptions.map((symptom) => <label className={values.includes(symptom.code) ? "checked" : ""} key={symptom.code}><input type="checkbox" checked={values.includes(symptom.code)} onChange={() => toggle(symptom.code)} /><span>{symptom.label}</span></label>)}</div></div>{values.length > 0 && <div className="red-flag-note" role="alert"><Pause size={20} /><p><strong>Pause this stage and contact your care team.</strong><span>Your answers will be highlighted for clinician review.</span></p></div>}<button className="primary-button" onClick={onNext}>{values.length ? t.saveReview : t.saveClear}<ArrowRight size={19} /></button><div className="citation"><ShieldCheck size={18} /><p><strong>Complete symptom screen</strong><span>Goom, Donnelly and Brockwell 2019, pages 10, 13 and 14. Level 4 expert consensus.</span></p></div></div>;
 }
 
-function Result({ profile, record, onHome }: { profile: PlayerProfile; record: TestRecord | null; onHome: () => void }) {
+function Result({ t, profile, record, onHome }: { t: UiStrings; profile: PlayerProfile; record: TestRecord | null; onHome: () => void }) {
   const clear = !record?.symptoms.length;
-  return <div className="flow-screen result-screen"><div className={`result-orb ${clear ? "" : "hold"}`}>{clear ? <Check size={38} /> : <Pause size={36} />}</div><span className="eyebrow">Check-in saved privately</span><h2>{clear ? `Thank you, ${profile.name}` : "Pause and check in"}</h2><p>{clear ? "Your movement observations and symptom-free check-in are ready for clinician review." : "Your reported symptoms have placed this stage on hold for clinician review."}</p><div className="result-grid"><div><strong>{record?.metrics.count ?? 0}</strong><span>Observed reps</span></div><div><strong>{record?.metrics.holdSeconds.toFixed(1) ?? "0.0"}s</strong><span>Observed hold</span></div><div><strong>{record?.symptoms.length ?? 0}</strong><span>Symptoms</span></div></div><div className="approval-card"><span><Stethoscope size={24} /></span><div><small>For {profile.clinicianName}</small><strong>{clear ? "Awaiting clinician review" : "Review requested with symptom alert"}</strong><p>Your stage has not advanced.</p></div><ChevronRight size={20} /></div><Link className="primary-button link-button" href="/clinician">Open clinician demo <ArrowRight size={18} /></Link><button className="text-button" onClick={onHome}>Back to today</button></div>;
+  return <div className="flow-screen result-screen"><div className={`result-orb ${clear ? "" : "hold"}`}>{clear ? <Check size={38} /> : <Pause size={36} />}</div><span className="eyebrow">{t.saved}</span><h2>{clear ? `${t.thanks}, ${profile.name}` : "Pause and check in"}</h2><p>{clear ? "Your movement observations and symptom-free check-in are ready for clinician review." : "Your reported symptoms have placed this stage on hold for clinician review."}</p><div className="result-grid"><div><strong>{record?.metrics.count ?? 0}</strong><span>Observed reps</span></div><div><strong>{record?.metrics.holdSeconds.toFixed(1) ?? "0.0"}s</strong><span>Observed hold</span></div><div><strong>{record?.symptoms.length ?? 0}</strong><span>Symptoms</span></div></div><div className="approval-card"><span><Stethoscope size={24} /></span><div><small>For {profile.clinicianName}</small><strong>{clear ? t.awaitingReview : "Review requested with symptom alert"}</strong><p>{t.stageNotAdvanced}</p></div><ChevronRight size={20} /></div><Link className="primary-button link-button" href="/clinician">Open clinician demo <ArrowRight size={18} /></Link><button className="text-button" onClick={onHome}>{t.backToday}</button></div>;
 }
 
 function Support({ profile }: { profile: PlayerProfile }) {
@@ -233,5 +273,5 @@ function Support({ profile }: { profile: PlayerProfile }) {
 }
 
 function Profile({ profile, onReset }: { profile: PlayerProfile; onReset: () => void }) {
-  return <div className="flow-screen"><Header title="Your profile" subtitle="The information used to personalise this device." /><div className="profile-card"><div className="profile-avatar">{profile.name.slice(0, 2).toUpperCase()}</div><h3>{profile.name}</h3><span>{profile.role.replace("-", " ")}</span><dl><div><dt>Delivery date</dt><dd>{new Date(`${profile.deliveryDate}T00:00:00`).toLocaleDateString()}</dd></div><div><dt>Delivery type</dt><dd>{profile.deliveryType}</dd></div><div><dt>Language</dt><dd>{profile.language.toUpperCase()}</dd></div><div><dt>Current stage</dt><dd>{profile.stage}</dd></div></dl></div><div className="privacy-card"><LockKeyhole size={21} /><div><strong>Local-first privacy</strong><p>Camera frames stay in memory only. This demo stores profile details and movement observations in IndexedDB on this device.</p></div></div><button className="danger-text-button" onClick={onReset}>Erase local demo data</button></div>;
+  return <div className="flow-screen"><Header title="Your profile" subtitle="The information used to personalise this device." /><div className="profile-card"><div className="profile-avatar">{profile.name.slice(0, 2).toUpperCase()}</div><h3>{profile.name}</h3><span>{profile.role.replace("-", " ")}</span><dl><div><dt>Delivery date</dt><dd>{new Date(`${profile.deliveryDate}T00:00:00`).toLocaleDateString()}</dd></div><div><dt>Delivery type</dt><dd>{profile.deliveryType}</dd></div><div><dt>Language</dt><dd>{profile.language.toUpperCase()}</dd></div><div><dt>Current stage</dt><dd>{profile.stage}</dd></div></dl></div><div className="privacy-card"><LockKeyhole size={21} /><div><strong>Local-first privacy</strong><p>Camera frames stay in memory only. This demo stores profile details and movement observations in IndexedDB on this device.</p><Link href="/privacy">Read privacy and consent details</Link></div></div><button className="danger-text-button" onClick={onReset}>Erase local demo data</button></div>;
 }

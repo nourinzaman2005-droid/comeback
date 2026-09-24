@@ -69,7 +69,7 @@ export const DEMO_PROFILE: PlayerProfile = {
   name: "Nourin",
   deliveryDate: "2026-06-04",
   deliveryType: "caesarean",
-  role: "all-rounder",
+  role: "bowler",
   language: "en",
   consentAt: "2026-09-25T00:00:00.000Z",
   clinicianId: "clinician-maya-demo",

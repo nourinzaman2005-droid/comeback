@@ -92,6 +92,15 @@ export async function deleteValue(storeName: StoreName, id: string) {
   database.close();
 }
 
+export async function clearLocalData() {
+  await new Promise<void>((resolve, reject) => {
+    const request = indexedDB.deleteDatabase(DB_NAME);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+    request.onblocked = () => reject(new Error("Close other ComeBack tabs before erasing data."));
+  });
+}
+
 export async function saveWithQueue(
   entity: SyncItem["entity"],
   storeName: StoreName,

@@ -543,7 +543,7 @@ gantt
 ## 11. Current Status
 
 - **Date:** 25 Sep 2026
-- **Phase:** Tiers 0, 1, 3, and the local Tier 4 demo are implemented. Tier 2 still awaits physical Android validation, and remote Tier 4 sync awaits a free Supabase project.
+- **Phase:** Tiers 0, 1, 3, 5, 6, and the local Tier 4 demo are implemented. Tier 2 still awaits physical Android validation, and remote Tier 4 sync awaits a free Supabase project.
 - **Completed locally:**
   - Next.js, TypeScript, Tailwind CSS, ESLint, Vitest, and Playwright dependencies configured.
   - Responsive PWA shell and manifest created, with a minimal production service worker.
@@ -565,10 +565,13 @@ gantt
   - The clinician dashboard reads linked local demo data, highlights symptoms, prevents unsafe approval, records approve or hold decisions, and updates the player stage across tabs.
   - Supabase migration includes RLS, accepted clinician links, metrics-only test records, red-flag records, guarded one-stage decisions, and no video field. The Edge Function can deliver a metadata-only red-flag webhook.
   - Automated mobile E2E covers onboarding, offline reload, symptom-free approval, cross-tab stage advancement, symptom hold, and approval prevention.
+  - Grounded explanation API uses a deterministic no-key fallback or Groq strict structured output, validates citations and stage invariance, and refuses clearance questions before any model call.
+  - Core UI supports English, Bengali, Hindi, and Urdu with RTL direction for Urdu. Bengali is covered through the complete player flow in E2E.
+  - Accessibility automation passes on mobile and desktop for onboarding, player, and clinician entry screens. Privacy, consent, fictional demo data, file-size enforcement, keyboard focus, and visible prototype accuracy limits are included.
 - **Research correction:** The official ICC document provides stage windows and general guidance but does not define camera-test pass thresholds or a complete automated clearance algorithm. Readiness tests and thresholds must be attributed to separate primary clinical sources and must not be presented as ICC criteria.
 - **Research correction:** Goom et al. 2019 classifies its postnatal load-impact and strength screening recommendations as Level 4 expert consensus. It is not a prescriptive protocol. Strength weakness directs rehabilitation but is not independently a barrier to return. Camera metrics remain observations for clinician review.
 - **Repository status:** Private repository created at `https://github.com/nourinzaman2005-droid/comeback`. The local `main` branch tracks `origin/main`, and CI runs on pushes and pull requests.
-- **Next task:** Connect a free Supabase project for remote multi-device Tier 4 verification, and complete the Tier 2 physical Android validation protocol.
+- **Next task:** Complete the outstanding external checks: physical Android camera validation, free Supabase remote sync, Groq-key path, and Vercel deployment recovery. Then begin Tier 7 submission assets.
 - **Decisions log:**
   - 24 Sep 2026: Problem statement 3 chosen. ComeBack idea locked after two research rounds (11 ideas evaluated).
   - 24 Sep 2026: Stack decided (Section 7.1). LLM never decides progression.
@@ -584,3 +587,5 @@ gantt
   - 25 Sep 2026: User explicitly directed work to continue into Tiers 3 and 4 despite the pending physical Tier 2 exit check.
   - 25 Sep 2026: Tier 3 completed locally with consent onboarding, IndexedDB, an offline journey, and cited roadmap and symptom flows.
   - 25 Sep 2026: Tier 4 completed for the same-device demo adapter. Remote Supabase schema, RLS, sync mapping, triggers, and Edge Function are implementation-ready but cannot be deployed or verified without a free Supabase project and authentication.
+  - 25 Sep 2026: Tier 5 completed with four-language UI, Bengali E2E, cited deterministic explanations, and a guarded optional Groq path. Live Groq output remains unverified until a free key is provided.
+  - 25 Sep 2026: Tier 6 completed locally. Mobile and desktop E2E, automated accessibility checks, privacy and consent, fictional personas, offline behavior, and submission file-size checks pass.
