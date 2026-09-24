@@ -542,8 +542,8 @@ gantt
 
 ## 11. Current Status
 
-- **Date:** 24 Sep 2026
-- **Phase:** Tier 0 complete. Tier 1 primary-source extraction and deterministic rules work are next.
+- **Date:** 25 Sep 2026
+- **Phase:** Tiers 0 and 1 complete. Tier 2 camera tests are next.
 - **Completed locally:**
   - Next.js, TypeScript, Tailwind CSS, ESLint, Vitest, and Playwright dependencies configured.
   - Responsive PWA shell and manifest created, with a minimal production service worker.
@@ -554,9 +554,13 @@ gantt
   - Production deployed over HTTPS at `https://comeback-neon.vercel.app` on Vercel's free tier.
   - Official nine-page ICC guideline reviewed and its 6 Rs content extracted to `content/guidelines/icc-2026.json` with page and section references.
   - Content validation tests explicitly prevent presenting the ICC framework as a complete automated medical-clearance protocol.
+  - Original Goom, Donnelly, and Brockwell 2019 guideline reviewed. Load-impact tests, strength screens, symptom stops, evidence level, and clinical limits are encoded in `content/guidelines/tests.json` with page references.
+  - Deterministic 6 Rs progression engine implemented in `lib/rules` with mandatory clinician approval, symptom holds, stage requirements, and source references.
+  - Rules engine has 100% statement, branch, function, and line coverage enforced in CI.
 - **Research correction:** The official ICC document provides stage windows and general guidance but does not define camera-test pass thresholds or a complete automated clearance algorithm. Readiness tests and thresholds must be attributed to separate primary clinical sources and must not be presented as ICC criteria.
+- **Research correction:** Goom et al. 2019 classifies its postnatal load-impact and strength screening recommendations as Level 4 expert consensus. It is not a prescriptive protocol. Strength weakness directs rehabilitation but is not independently a barrier to return. Camera metrics remain observations for clinician review.
 - **Repository status:** Private repository created at `https://github.com/nourinzaman2005-droid/comeback`. The local `main` branch tracks `origin/main`, and CI runs on pushes and pull requests.
-- **Next task:** Verify postnatal readiness tests against their original clinical source before implementing any deterministic health rules.
+- **Next task:** Tier 2 MediaPipe camera pipeline, beginning with the four planned tests and explicit camera-quality gates.
 - **Decisions log:**
   - 24 Sep 2026: Problem statement 3 chosen. ComeBack idea locked after two research rounds (11 ideas evaluated).
   - 24 Sep 2026: Stack decided (Section 7.1). LLM never decides progression.
@@ -566,3 +570,4 @@ gantt
   - 24 Sep 2026: Private GitHub repository created under Nourin's account and the initial prototype pushed to `main`.
   - 25 Sep 2026: Tier 0 completed with a live Vercel deployment and mobile PWA CI coverage.
   - 25 Sep 2026: User approved Groq's free API tier in place of the previously planned paid Claude API.
+  - 25 Sep 2026: Tier 1 completed. ICC stage guidance, Goom test guidance, and ComeBack product safety gates remain separately attributed.

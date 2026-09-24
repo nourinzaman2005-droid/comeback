@@ -408,7 +408,7 @@ function TestScreen({
           <span>of 10</span>
         </div>
         <div className="form-cue">
-          <CheckCircle2 size={17} /> Great control. Keep your knee steady.
+          <CheckCircle2 size={17} /> Rep counted. Move at a comfortable pace.
         </div>
       </div>
       <button className="pause-button" onClick={onToggle}>
@@ -515,8 +515,8 @@ function ResultScreen({
           <span>Repetitions</span>
         </div>
         <div>
-          <strong>{clear ? "Steady" : "Review"}</strong>
-          <span>Knee control</span>
+          <strong>Left</strong>
+          <span>Side tested</span>
         </div>
         <div>
           <strong>{clear ? "None" : "Reported"}</strong>

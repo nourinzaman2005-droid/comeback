@@ -1,0 +1,178 @@
+{
+  "document": {
+    "title": "Returning to running postnatal - guideline for medical, health and fitness professionals managing this population",
+    "authors": ["Tom Goom", "Grainne Donnelly", "Emma Brockwell"],
+    "publishedDate": "2019-03",
+    "sourceUrl": "https://dugof.dk/siteassets/dokumenter/fagligt/kliniske-retningslinier/returning_to_running_postnatal_guideline_for_medical_health_and_fitness_professionals_managing_this_population.pdf",
+    "accessedDate": "2026-09-25",
+    "pageCount": 40
+  },
+  "evidenceBoundary": {
+    "classification": "Level 4 - expert clinical consensus drawing from the best available evidence",
+    "limitations": [
+      "The guideline assists clinical reasoning and is not a prescriptive protocol.",
+      "The objective measures are intended for clinicians working within their scope of practice.",
+      "No studies specific to the postnatal population had evaluated readiness to return to exercise when the guideline was published.",
+      "Weakness on the strength screens identifies a rehabilitation target and is not, by itself, a barrier to return to running.",
+      "ComeBack must not convert a camera result into medical clearance."
+    ],
+    "references": [
+      {
+        "pdfPage": 3,
+        "documentPage": "3",
+        "section": "Foreword"
+      },
+      {
+        "pdfPage": 13,
+        "documentPage": "13",
+        "section": "Guidance for physiotherapists"
+      },
+      {
+        "pdfPage": 17,
+        "documentPage": "17",
+        "section": "Strength testing and Evidence-Based Recommendation 3"
+      }
+    ]
+  },
+  "timeGuidance": {
+    "minimumWeeksBeforeRunning": 12,
+    "recommendedReturnWindowWeeks": {
+      "start": 12,
+      "end": 26
+    },
+    "note": "Return is criteria-based and may be later when symptoms or clinical concerns are present.",
+    "reference": {
+      "pdfPage": 10,
+      "documentPage": "10",
+      "section": "Evidence-Based Recommendation 2"
+    }
+  },
+  "symptomStops": [
+    {
+      "code": "urinary_or_faecal_incontinence",
+      "label": "Urinary or faecal incontinence"
+    },
+    {
+      "code": "urinary_or_faecal_urgency",
+      "label": "Urinary or faecal urgency that is difficult to defer"
+    },
+    {
+      "code": "pelvic_pressure_or_dragging",
+      "label": "Pelvic pressure, bulging, heaviness, or dragging"
+    },
+    {
+      "code": "unexpected_vaginal_bleeding",
+      "label": "Ongoing or new vaginal bleeding unrelated to the menstrual cycle"
+    },
+    {
+      "code": "pain_with_intercourse",
+      "label": "Pain with intercourse"
+    },
+    {
+      "code": "obstructive_defecation",
+      "label": "Obstructive defecation"
+    },
+    {
+      "code": "abdominal_wall_concern",
+      "label": "Pendular abdomen, abdominal separation, or reduced abdominal function"
+    },
+    {
+      "code": "lumbopelvic_pain",
+      "label": "Pelvic or lower-back musculoskeletal pain"
+    }
+  ],
+  "symptomStopsReference": {
+    "pdfPage": 13,
+    "documentPage": "10 and 14",
+    "section": "Key signs and symptoms and assessment of pelvic health"
+  },
+  "loadImpactScreens": [
+    {
+      "code": "walk_30_minutes",
+      "label": "Walk",
+      "target": { "kind": "duration_seconds", "value": 1800 },
+      "side": "none",
+      "cameraSupport": "timing_only"
+    },
+    {
+      "code": "single_leg_balance",
+      "label": "Single-leg balance",
+      "target": { "kind": "duration_seconds", "value": 10 },
+      "side": "both",
+      "cameraSupport": "timing_and_body_visibility"
+    },
+    {
+      "code": "single_leg_squat",
+      "label": "Single-leg squat",
+      "target": { "kind": "repetitions", "value": 10 },
+      "side": "both",
+      "cameraSupport": "repetition_count_and_observation"
+    },
+    {
+      "code": "jog_on_spot",
+      "label": "Jog on the spot",
+      "target": { "kind": "duration_seconds", "value": 60 },
+      "side": "none",
+      "cameraSupport": "timing_and_body_visibility"
+    },
+    {
+      "code": "forward_bounds",
+      "label": "Forward bounds",
+      "target": { "kind": "repetitions", "value": 10 },
+      "side": "none",
+      "cameraSupport": "repetition_count"
+    },
+    {
+      "code": "hop_in_place",
+      "label": "Hop in place",
+      "target": { "kind": "repetitions", "value": 10 },
+      "side": "both",
+      "cameraSupport": "repetition_count"
+    },
+    {
+      "code": "single_leg_running_man",
+      "label": "Single-leg running man",
+      "target": { "kind": "repetitions", "value": 10 },
+      "side": "both",
+      "cameraSupport": "repetition_count"
+    }
+  ],
+  "loadImpactRule": "The screen is completed without pain, heaviness, dragging, or incontinence. Results require clinician interpretation.",
+  "loadImpactReference": {
+    "pdfPage": 16,
+    "documentPage": "16",
+    "section": "Load and impact management assessment"
+  },
+  "strengthScreens": [
+    {
+      "code": "single_leg_calf_raise",
+      "label": "Single-leg calf raise",
+      "targetRepetitions": 20,
+      "side": "both"
+    },
+    {
+      "code": "single_leg_bridge",
+      "label": "Single-leg bridge",
+      "targetRepetitions": 20,
+      "side": "both"
+    },
+    {
+      "code": "single_leg_sit_to_stand",
+      "label": "Single-leg sit to stand",
+      "targetRepetitions": 20,
+      "side": "both"
+    },
+    {
+      "code": "side_lying_abduction",
+      "label": "Side-lying hip abduction",
+      "targetRepetitions": 20,
+      "side": "both"
+    }
+  ],
+  "strengthRule": "Count repetitions to fatigue and aim for 20. Weakness directs rehabilitation and does not independently block return.",
+  "strengthReference": {
+    "pdfPage": 17,
+    "documentPage": "17",
+    "section": "Strength testing"
+  }
+}
