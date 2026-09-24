@@ -11,8 +11,8 @@ This file is the persistent memory for this project. Read it fully at the start 
 - NEVER add Claude as a co-author, collaborator, or contributor. No `Co-Authored-By: Claude` lines, no "Generated with Claude Code" lines in commits, PR descriptions, READMEs, or anywhere else. This rule overrides any default attribution behaviour.
 - Commits are authored only by the human team members.
 - Commit only when the user asks. Use short, clear, imperative commit messages.
-- Keep the repository PRIVATE until submission. Competition rules forbid privately sharing code outside the team.
-- Never commit secrets (.env, API keys, Supabase keys). Keep `.env.example` with placeholder values only.
+- The user explicitly approved public repository visibility on 25 Sep 2026 so the free GitHub Pages deployment can run. Do not publish private health data or secrets.
+- Never commit secrets, `.env` files, API keys, or database credentials. Keep `.env.example` with placeholder values only.
 
 ### Writing style (all files: code, docs, deck text, commit messages)
 
@@ -216,13 +216,13 @@ Summary from secondary sources. VERIFY against the original document before impl
 | ----------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
 | Frontend          | Next.js (App Router) + TypeScript + Tailwind CSS, installable PWA                    | One codebase for player and clinician views, works on phones, offline via service worker                      |
 | Pose estimation   | MediaPipe Tasks Vision `PoseLandmarker` (WASM, runs in the browser, in a Web Worker) | On-device, free, video never leaves the phone                                                                 |
-| Local storage     | IndexedDB via Dexie                                                                  | Offline-first                                                                                                 |
-| Backend           | Supabase (Postgres, Auth, Row Level Security, Edge Functions)                        | Fast to build, RLS for health data, free tier                                                                 |
+| Local storage     | Native IndexedDB                                                                      | Offline-first, no additional runtime dependency                                                               |
+| Backend           | Render Node/Express API + Render PostgreSQL                                          | Free-tier remote demo sync with server-side role and safety checks                                             |
 | Rules engine      | Pure TypeScript module, deterministic, fully unit tested                             | Safety: progression logic is predictable and auditable                                                        |
 | Guideline content | Structured JSON extracted from the ICC PDF, with section references                  | Traceable citations                                                                                           |
-| AI layer          | Groq API via server route                                                            | Free-tier plain-language explanations, personalisation of wording, and translation. Never decides progression |
-| i18n              | next-intl, locales: en, hi, ur (RTL), bn                                             | Multi-language requirement                                                                                    |
-| Hosting           | Vercel (frontend) + Supabase cloud                                                   | Free tiers, quick deploy                                                                                      |
+| AI layer          | Optional Groq API via the Render API, with deterministic cited fallback             | Free-tier plain-language explanations and translation. Never decides progression                              |
+| i18n              | Typed UI dictionaries: en, hi, ur (RTL), bn                                         | Multi-language requirement without a client runtime dependency                                                |
+| Hosting           | GitHub Pages (static frontend) + Render (API and PostgreSQL)                         | Public HTTPS frontend plus a free cloud demo backend                                                           |
 | Testing           | Vitest (unit), Playwright (e2e)                                                      | Rules engine and flows must be tested                                                                         |
 
 ### 7.2 System architecture
@@ -243,12 +243,12 @@ flowchart TB
     end
 
     subgraph Cloud["Cloud"]
-        API["Next.js server routes"]
+        API["Render Node/Express API<br/>signed demo sessions"]
         LLM["Groq API<br/>explain, personalise wording, translate"]
-        subgraph SB["Supabase"]
-            AUTH["Auth"]
-            DB["Postgres + RLS<br/>metrics only, no video"]
-            EF["Edge Function<br/>red-flag alerts"]
+        subgraph RENDER["Render"]
+            AUTH["HMAC session + role checks"]
+            DB["PostgreSQL<br/>metrics only, no video"]
+            EF["API webhook<br/>red-flag alerts"]
         end
     end
 
@@ -300,7 +300,7 @@ sequenceDiagram
     participant UI as PWA UI
     participant W as Pose Worker
     participant R as Rules Engine
-    participant DB as Supabase
+    participant DB as Render PostgreSQL API
     participant C as Clinician
 
     P->>UI: Start test (e.g. single-leg squat, left)
@@ -379,15 +379,15 @@ erDiagram
 ### 7.6 Planned repository structure
 
 ```
-/app                  Next.js routes (player, clinician, api)
+/app                  Next.js static routes (player, clinician, privacy)
 /components           UI components
 /lib/pose             MediaPipe worker, landmark smoothing, metric calculators
 /lib/rules            6 Rs state machine, test pass criteria, red-flag rules
-/lib/sync             Dexie schema, sync queue, Supabase client
+/lib/data             IndexedDB, sync queue, and Render API client
 /lib/ai               Groq API client, prompt templates
 /content/guidelines   icc-2026.json (extracted, with section refs), tests.json
-/messages             i18n files: en.json, hi.json, ur.json, bn.json
-/supabase             migrations, RLS policies, edge functions
+/server               Express API and PostgreSQL schema
+/render.yaml          Render API and database Blueprint
 /tests                vitest unit tests, playwright e2e
 /docs                 architecture notes, validation notes, submission assets
 ```
@@ -418,67 +418,68 @@ gantt
 
 ### Tier 0: Foundation (Day 1)
 
-- Create private GitHub repo (no Claude attribution anywhere).
-- Scaffold Next.js + TypeScript + Tailwind, PWA manifest, service worker.
-- Set up Supabase project, `.env.example`, Vitest, Playwright, ESLint, Prettier.
-- Deploy empty app to Vercel.
-- **Exit:** app loads on a phone over HTTPS, installs as PWA, CI runs lint + tests.
+- [x] Create the GitHub repository with no generated-author attribution. It is public because GitHub Pages requires public visibility on the free plan.
+- [x] Scaffold Next.js + TypeScript + Tailwind, PWA manifest, and service worker.
+- [x] Add the Render/PostgreSQL Blueprint, `.env.example`, Vitest, Playwright, ESLint, and Prettier.
+- [x] Deploy the static frontend to GitHub Pages.
+- [x] **Exit:** app loads over HTTPS, is installable as a PWA, and CI runs lint + tests.
 
 ### Tier 1: Guideline knowledge base and rules engine (Days 1 to 2)
 
-- Download and read the ICC Return to Play Post-Pregnancy Guidelines PDF.
-- Extract stages, criteria, red flags, timelines into `content/guidelines/icc-2026.json` with section references.
-- Verify test list against Goom et al. 2019 original; write `content/guidelines/tests.json`.
-- Implement the 6 Rs state machine and red-flag rules in `/lib/rules` as pure functions.
-- **Exit:** 100% of rules engine branches unit tested; every rule links to a guideline reference.
+- [x] Download and read the ICC Return to Play Post-Pregnancy Guidelines PDF.
+- [x] Extract stages, criteria, red flags, and timelines into `content/guidelines/icc-2026.json` with section references.
+- [x] Verify the test list against the Goom et al. 2019 original and write `content/guidelines/tests.json`.
+- [x] Implement the 6 Rs state machine and red-flag rules in `/lib/rules` as pure functions.
+- [x] **Exit:** 100% of rules-engine branches are unit tested and every rule links to a guideline reference.
 
 ### Tier 2: Camera-verified tests (Days 2 to 4)
 
-- MediaPipe PoseLandmarker in a Web Worker; landmark smoothing.
-- Camera setup guide (framing check: full body visible, correct view).
-- Metric calculators: rep counter, hold timer, asymmetry, FPPA on single-leg squat, squat depth.
-- Start with 4 tests: single-leg squat, single-leg balance, hop on the spot, single-leg bridge.
-- **Exit:** tests run on a mid-range Android phone at usable frame rate; counts match manual count on our own recordings.
+- [x] Run MediaPipe PoseLandmarker in a Web Worker with landmark smoothing.
+- [x] Add a camera setup guide with full-body framing and view checks.
+- [x] Implement rep count, hold time, asymmetry, single-leg-squat FPPA, and squat-depth metrics.
+- [x] Implement four tests: single-leg squat, single-leg balance, hop on the spot, and single-leg bridge.
+- [ ] **Exit:** validate usable frame rate on a physical mid-range Android phone and compare counts with manual counts on team recordings.
 
 ### Tier 3: Player app flow (Days 4 to 5)
 
-- Onboarding (consent, delivery date, delivery type, role, language).
-- Roadmap view (current R stage, next steps, cited guideline text).
-- Test flow + symptom check-in + result screen.
-- Offline storage in IndexedDB.
-- **Exit:** complete journey works offline end to end.
+- [x] Build onboarding for consent, delivery date, delivery type, role, and language.
+- [x] Build the roadmap view with current R stage, next steps, and cited guideline text.
+- [x] Build the test flow, symptom check-in, and result screen.
+- [x] Store player data offline in IndexedDB.
+- [x] **Exit:** the complete player journey works offline end to end.
 
 ### Tier 4: Clinician dashboard and sync (Days 5 to 6)
 
-- Supabase schema + RLS (player sees own data, linked clinician sees linked players only).
-- Sync queue (metrics only, never video).
-- Clinician dashboard: player list, trends, red flags, approve/hold stage.
-- Red-flag alert via Edge Function.
-- **Exit:** approval on the dashboard advances the player's stage on the phone.
+- [x] Implement the Render/PostgreSQL schema and API role checks so a player can access only her identity and clinician actions require a clinician session.
+- [x] Implement local-first and remote sync for metrics only, never video.
+- [x] Build the clinician dashboard with player list, observations, red flags, and approve/hold stage actions.
+- [x] Implement an optional signed, metadata-only red-flag webhook in the Render API.
+- [ ] **Exit:** verify on the live Render service that a dashboard approval advances the player's stage on a separate phone.
 
 ### Tier 5: AI layer and multi-language (Days 6 to 7)
 
-- Groq API route: plain-language explanation of the current stage and results, grounded only in guideline JSON with citations.
-- Translations: en, hi, ur (RTL), bn for UI strings; AI explanations in the chosen language.
-- Guardrails: AI output cannot change stage; refuses medical clearance questions and redirects to clinician.
-- **Exit:** same flow demoable in English and one other language.
+- [x] Implement the Groq-compatible API route and no-key fallback for plain-language explanations grounded only in guideline JSON with citations.
+- [x] Add en, hi, ur (RTL), and bn UI strings plus explanations in the chosen language.
+- [x] Enforce guardrails so AI output cannot change stage and clearance questions redirect to a clinician.
+- [x] **Exit:** the same complete flow is automated in English and Bengali.
 
 ### Tier 6: Hardening and demo data (Day 7)
 
-- Accessibility pass (contrast, font size, screen reader labels).
-- Seed demo personas (e.g. pace bowler, 16 weeks postpartum, C-section).
-- Disclaimers, privacy notice, consent screens.
-- Small accuracy note: our rep counts vs manual counts on recorded clips.
-- **Exit:** full demo runs without errors on a phone and a laptop.
+- [x] Complete the accessibility pass for contrast, font size, keyboard focus, and screen-reader labels.
+- [x] Seed fictional demo personas, including a postpartum pace bowler with a caesarean delivery.
+- [x] Add disclaimers, a privacy notice, and consent screens.
+- [ ] Publish the accuracy note comparing pose-derived rep counts with manual counts on team recordings.
+- [x] **Exit:** the full demo passes automated Pixel 7 and desktop Chromium journeys without errors.
 
 ### Tier 7: Submission package (Days 7 to 10)
 
-- Pitch deck (problem, solution, demo, impact, ICC pilot plan, cross-sport, team).
-- Solution overview (max 2 pages or 5 slides).
-- 3-minute demo video: human story (ICC quotes) then live camera test then clinician approval then scale.
-- Architecture and documentation in `/docs` (winners must deliver usable documentation).
-- Check every file is under 40MB; submit by 4 Oct 2026.
-- **Exit:** submitted, confirmation saved.
+- [x] Create the pitch deck: problem, solution, demo, impact, ICC pilot plan, cross-sport potential, and team.
+- [x] Create the solution overview with a maximum of two pages or five slides.
+- [ ] Record the 3-minute demo video: human story, live camera test, clinician approval, and scale.
+- [x] Maintain usable architecture, validation, deployment, and safety documentation in `/docs` and `CLAUDE.md`.
+- [x] Enforce that every submission file is under 40 MB.
+- [ ] Submit by 4 Oct 2026 and save the confirmation.
+- [ ] **Exit:** submission is confirmed and archived.
 
 ---
 
@@ -543,7 +544,7 @@ gantt
 ## 11. Current Status
 
 - **Date:** 25 Sep 2026
-- **Phase:** Tiers 0, 1, 3, 5, 6, and the local Tier 4 demo are implemented. Tier 2 still awaits physical Android validation, and remote Tier 4 sync awaits a free Supabase project.
+- **Phase:** Tiers 0, 1, 3, 5, and 6 are implemented. Tier 2 still awaits physical Android validation. Tier 4 is implemented and API-tested but awaits live Render Blueprint creation and a separate-device check.
 - **Completed locally:**
   - Next.js, TypeScript, Tailwind CSS, ESLint, Vitest, and Playwright dependencies configured.
   - Responsive PWA shell and manifest created, with a minimal production service worker.
@@ -551,7 +552,7 @@ gantt
   - Safety and privacy messaging included. The prototype never presents a medical-clearance decision.
   - Team ownership documented in `docs/TEAM_TASKS.md`.
   - Production PWA behavior verified in an automated Pixel-sized browser: full readiness demo, responsive width, manifest, and active service worker.
-  - Production deployed over HTTPS at `https://comeback-neon.vercel.app` on Vercel's free tier.
+  - Static production PWA deployed over HTTPS at `https://nourinzaman2005-droid.github.io/comeback/` through GitHub Pages.
   - Official nine-page ICC guideline reviewed and its 6 Rs content extracted to `content/guidelines/icc-2026.json` with page and section references.
   - Content validation tests explicitly prevent presenting the ICC framework as a complete automated medical-clearance protocol.
   - Original Goom, Donnelly, and Brockwell 2019 guideline reviewed. Load-impact tests, strength screens, symptom stops, evidence level, and clinical limits are encoded in `content/guidelines/tests.json` with page references.
@@ -563,29 +564,32 @@ gantt
   - Consent onboarding, personalised cited roadmap, complete symptom check-in, profile, support, and result flows persist in IndexedDB.
   - The visited player journey reloads offline through a runtime-caching service worker.
   - The clinician dashboard reads linked local demo data, highlights symptoms, prevents unsafe approval, records approve or hold decisions, and updates the player stage across tabs.
-  - Supabase migration includes RLS, accepted clinician links, metrics-only test records, red-flag records, guarded one-stage decisions, and no video field. The Edge Function can deliver a metadata-only red-flag webhook.
+  - Render Blueprint provisions an Express API and PostgreSQL. Signed expiring demo sessions, role checks, metrics-only records, one-stage decisions, symptom approval blocking, and an optional signed red-flag webhook are implemented. The schema has no video field.
+  - API integration tests cover player profile and check-in sync, the clinician queue, approval-driven stage advancement, player refresh, and symptom-based approval blocking.
   - Automated mobile E2E covers onboarding, offline reload, symptom-free approval, cross-tab stage advancement, symptom hold, and approval prevention.
   - Grounded explanation API uses a deterministic no-key fallback or Groq strict structured output, validates citations and stage invariance, and refuses clearance questions before any model call.
   - Core UI supports English, Bengali, Hindi, and Urdu with RTL direction for Urdu. Bengali is covered through the complete player flow in E2E.
   - Accessibility automation passes on mobile and desktop for onboarding, player, and clinician entry screens. Privacy, consent, fictional demo data, file-size enforcement, keyboard focus, and visible prototype accuracy limits are included.
+  - Tier 7 pitch deck and five-slide solution overview are exported as submission-ready PDFs. A timed 2 minute 45 second recording script and safety checklist are included in `docs/submission`.
 - **Research correction:** The official ICC document provides stage windows and general guidance but does not define camera-test pass thresholds or a complete automated clearance algorithm. Readiness tests and thresholds must be attributed to separate primary clinical sources and must not be presented as ICC criteria.
 - **Research correction:** Goom et al. 2019 classifies its postnatal load-impact and strength screening recommendations as Level 4 expert consensus. It is not a prescriptive protocol. Strength weakness directs rehabilitation but is not independently a barrier to return. Camera metrics remain observations for clinician review.
-- **Repository status:** Private repository created at `https://github.com/nourinzaman2005-droid/comeback`. The local `main` branch tracks `origin/main`, and CI runs on pushes and pull requests.
-- **Next task:** Complete the outstanding external checks: physical Android camera validation, free Supabase remote sync, Groq-key path, and Vercel deployment recovery. Then begin Tier 7 submission assets.
+- **Repository status:** Public repository at `https://github.com/nourinzaman2005-droid/comeback`. The local `main` branch tracks `origin/main`; CI and GitHub Pages deployment run on pushes.
+- **Next task:** Create the Render Blueprint, verify remote sync on separate devices, perform the physical Android/count validation, optionally verify the Groq-key path, and complete the Tier 7 deck, overview, demo video, and submission.
 - **Decisions log:**
   - 24 Sep 2026: Problem statement 3 chosen. ComeBack idea locked after two research rounds (11 ideas evaluated).
-  - 24 Sep 2026: Stack decided (Section 7.1). LLM never decides progression.
+  - 24 Sep 2026: Initial stack decided. LLM never decides progression.
   - 24 Sep 2026: Player demo flow prioritised for a clear two-minute video: today view, guided test, symptom check, result, clinician review.
   - 24 Sep 2026: Nourin owns the player experience and demo narrative. Ashra owns guideline/rules validation, clinician workflow, backend security, and evidence. Both review safety wording and submission assets.
   - 24 Sep 2026: ICC guidance and externally sourced readiness-test protocols will remain separate in the data model and UI citations.
-  - 24 Sep 2026: Private GitHub repository created under Nourin's account and the initial prototype pushed to `main`.
-  - 25 Sep 2026: Tier 0 completed with a live Vercel deployment and mobile PWA CI coverage.
+  - 24 Sep 2026: GitHub repository created under Nourin's account and the initial prototype pushed to `main`.
+  - 25 Sep 2026: Tier 0 completed with mobile PWA CI coverage; hosting later moved from Vercel to GitHub Pages at the user's request.
   - 25 Sep 2026: User approved Groq's free API tier in place of the previously planned paid Claude API.
   - 25 Sep 2026: Tier 1 completed. ICC stage guidance, Goom test guidance, and ComeBack product safety gates remain separately attributed.
   - 25 Sep 2026: Tier 2 camera pipeline implemented for four tests. Per the tier gate, Tier 3 remains paused until Android performance and recording counts are checked physically.
   - 25 Sep 2026: Ashra's verified GitHub account is `ashrarahman`; a write-collaborator invitation was sent.
   - 25 Sep 2026: User explicitly directed work to continue into Tiers 3 and 4 despite the pending physical Tier 2 exit check.
   - 25 Sep 2026: Tier 3 completed locally with consent onboarding, IndexedDB, an offline journey, and cited roadmap and symptom flows.
-  - 25 Sep 2026: Tier 4 completed for the same-device demo adapter. Remote Supabase schema, RLS, sync mapping, triggers, and Edge Function are implementation-ready but cannot be deployed or verified without a free Supabase project and authentication.
+  - 25 Sep 2026: Tier 4 completed for the same-device adapter, then extended with an API-tested Render/PostgreSQL remote path. Live Blueprint creation and separate-device verification remain.
   - 25 Sep 2026: Tier 5 completed with four-language UI, Bengali E2E, cited deterministic explanations, and a guarded optional Groq path. Live Groq output remains unverified until a free key is provided.
   - 25 Sep 2026: Tier 6 completed locally. Mobile and desktop E2E, automated accessibility checks, privacy and consent, fictional personas, offline behavior, and submission file-size checks pass.
+  - 25 Sep 2026: The user replaced Vercel/Supabase with GitHub Pages plus Render/PostgreSQL. The repository was made public for Pages, a static-export workflow was added, and Ashra authored the Render API migration commit.

@@ -1,0 +1,272 @@
+@page {
+  size: 16in 9in;
+  margin: 0;
+}
+
+:root {
+  --plum: #6f315f;
+  --rose: #d76f91;
+  --blush: #f8dce5;
+  --cream: #fffaf8;
+  --ink: #291d28;
+  --muted: #695d68;
+  --sage: #5d826f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #ddd4da;
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.slide {
+  position: relative;
+  width: 16in;
+  height: 9in;
+  padding: 0.72in 0.85in;
+  overflow: hidden;
+  break-after: page;
+  background:
+    radial-gradient(circle at 94% 10%, rgba(215, 111, 145, 0.22), transparent 26%),
+    radial-gradient(circle at 7% 94%, rgba(111, 49, 95, 0.13), transparent 25%),
+    var(--cream);
+}
+
+.slide::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.13in;
+  height: 100%;
+  background: linear-gradient(var(--rose), var(--plum));
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  max-width: 12.5in;
+  margin-bottom: 0.28in;
+  color: var(--plum);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.72in;
+  line-height: 1.04;
+}
+
+h2 {
+  margin-bottom: 0.26in;
+  color: var(--plum);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.48in;
+}
+
+h3 {
+  margin-bottom: 0.12in;
+  color: var(--plum);
+  font-size: 0.27in;
+}
+
+p,
+li {
+  font-size: 0.24in;
+  line-height: 1.42;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding-left: 0.28in;
+}
+
+li {
+  margin-bottom: 0.12in;
+}
+
+.eyebrow {
+  margin-bottom: 0.16in;
+  color: var(--rose);
+  font-size: 0.18in;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.lead {
+  max-width: 11.5in;
+  color: var(--muted);
+  font-size: 0.33in;
+  line-height: 1.38;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-right: 2.2in;
+}
+
+.hero h1 {
+  font-size: 1.03in;
+}
+
+.tagline {
+  max-width: 10.8in;
+  color: var(--muted);
+  font-size: 0.37in;
+  line-height: 1.42;
+}
+
+.pill {
+  display: inline-block;
+  width: fit-content;
+  margin-top: 0.22in;
+  padding: 0.13in 0.22in;
+  border: 1px solid rgba(111, 49, 95, 0.18);
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--plum);
+  font-size: 0.2in;
+  font-weight: 700;
+}
+
+.grid-2,
+.grid-3,
+.grid-4 {
+  display: grid;
+  gap: 0.25in;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.card {
+  padding: 0.27in;
+  border: 1px solid rgba(111, 49, 95, 0.14);
+  border-radius: 0.22in;
+  background: rgba(255, 255, 255, 0.79);
+  box-shadow: 0 0.1in 0.28in rgba(75, 39, 66, 0.07);
+}
+
+.card p,
+.card li {
+  font-size: 0.21in;
+}
+
+.number {
+  display: grid;
+  width: 0.43in;
+  height: 0.43in;
+  margin-bottom: 0.16in;
+  border-radius: 50%;
+  background: var(--plum);
+  color: white;
+  font-size: 0.22in;
+  font-weight: 800;
+  place-items: center;
+}
+
+.quote {
+  padding: 0.35in 0.42in;
+  border-left: 0.08in solid var(--rose);
+  border-radius: 0 0.2in 0.2in 0;
+  background: rgba(248, 220, 229, 0.55);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.31in;
+  line-height: 1.42;
+}
+
+.metric {
+  color: var(--plum);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.63in;
+  font-weight: 800;
+}
+
+.flow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.13in;
+}
+
+.flow .card {
+  flex: 1;
+}
+
+.arrow {
+  display: grid;
+  color: var(--rose);
+  font-size: 0.34in;
+  place-items: center;
+}
+
+.callout {
+  margin-top: 0.28in;
+  padding: 0.18in 0.24in;
+  border-radius: 0.14in;
+  background: var(--plum);
+  color: white;
+  font-size: 0.23in;
+  font-weight: 700;
+}
+
+.source {
+  position: absolute;
+  right: 0.85in;
+  bottom: 0.24in;
+  left: 0.85in;
+  color: #766b74;
+  font-size: 0.12in;
+  line-height: 1.25;
+}
+
+.page-number {
+  position: absolute;
+  right: 0.32in;
+  bottom: 0.22in;
+  color: white;
+  font-size: 0.14in;
+  font-weight: 800;
+  writing-mode: vertical-rl;
+}
+
+.compact p,
+.compact li {
+  font-size: 0.19in;
+}
+
+.checks {
+  list-style: none;
+  padding: 0;
+}
+
+.checks li::before {
+  content: "✓";
+  margin-right: 0.11in;
+  color: var(--sage);
+  font-weight: 900;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+}

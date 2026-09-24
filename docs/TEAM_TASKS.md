@@ -13,7 +13,7 @@ This split keeps both contributors working in parallel while preserving a single
 
 - Own the ICC guideline extraction and cited structured content.
 - Own the deterministic rules engine, red-flag rules, and complete branch tests.
-- Own Supabase schema, row-level security, sync, and the clinician dashboard.
+- Own the Render/PostgreSQL API, role checks, sync, and the clinician dashboard.
 - Maintain validation notes and evidence for camera-derived metrics.
 
 ## Shared reviews

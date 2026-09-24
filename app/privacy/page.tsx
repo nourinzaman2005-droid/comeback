@@ -23,8 +23,8 @@ export default function PrivacyPage() {
         <p>
           Your profile, consent time, movement observations, symptom codes,
           and clinician decisions are stored in IndexedDB for the local demo.
-          When the optional Supabase service is configured, only those fields
-          enter the encrypted sync queue.
+          When the optional Render service is configured, only those fields
+          sync to PostgreSQL over HTTPS.
         </p>
         <h2>Third-party runtime notice</h2>
         <p>

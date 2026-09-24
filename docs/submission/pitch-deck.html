@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ComeBack Pitch Deck</title>
+    <link rel="stylesheet" href="submission.css" />
+  </head>
+  <body>
+    <section class="slide hero">
+      <p class="eyebrow">ICC x Ignyte Hackathon 2026</p>
+      <h1>ComeBack</h1>
+      <p class="tagline">The clinician-connected, camera-assisted journey that turns the ICC Return to Play Post-Pregnancy Guidelines into practical support on any phone.</p>
+      <span class="pill">Built by Nourin Zaman and Ashra Rahman Tuba</span>
+      <span class="page-number">01</span>
+    </section>
+
+    <section class="slide">
+      <p class="eyebrow">The human problem</p>
+      <h1>Motherhood should not end a sporting career.</h1>
+      <div class="grid-2">
+        <div class="quote">“No player should have to choose between motherhood and representing her country.”<br /><strong>Jay Shah, ICC Chairman</strong></div>
+        <div class="card">
+          <h3>A new framework, but still a document</h3>
+          <p>The ICC published a nine-page Return to Play Post-Pregnancy framework in June 2026. Players and care teams still need a practical way to follow it day by day.</p>
+        </div>
+      </div>
+      <div class="callout">The gap is not another workout app. It is an understandable, measurable, clinician-led return journey.</div>
+      <p class="source">Sources: ICC, “ICC launches Return to Play Post-Pregnancy Guidelines,” 22 Jun 2026; ICC Return to Play Post Pregnancy Guidelines, pp. 2-7.</p>
+      <span class="page-number">02</span>
+    </section>
+
+    <section class="slide">
+      <p class="eyebrow">Our answer</p>
+      <h1>One calm path from recovery to cricket.</h1>
+      <div class="grid-4">
+        <div class="card"><span class="number">1</span><h3>Personal roadmap</h3><p>The ICC 6 Rs become clear next steps with source references.</p></div>
+        <div class="card"><span class="number">2</span><h3>Private camera checks</h3><p>On-device pose estimates reps, time, asymmetry, depth, and FPPA indicators.</p></div>
+        <div class="card"><span class="number">3</span><h3>Symptom safety gate</h3><p>Reported symptoms stop approval and direct the player to clinical review.</p></div>
+        <div class="card"><span class="number">4</span><h3>Clinician decision</h3><p>A clinician reviews metrics and approves or holds the next stage.</p></div>
+      </div>
+      <div class="callout">AI explains. Camera observes. Only the clinician approves.</div>
+      <p class="source">Sources: ICC Guidelines, pp. 3 and 6-7; Goom, Donnelly and Brockwell, Returning to Running Postnatal, 2019, pp. 13-18.</p>
+      <span class="page-number">03</span>
+    </section>
+
+    <section class="slide">
+      <p class="eyebrow">Two-minute product story</p>
+      <h1>Easy to understand without training.</h1>
+      <div class="flow">
+        <div class="card"><span class="number">1</span><h3>See today</h3><p>Current R stage, one next action, and the guideline source.</p></div>
+        <div class="arrow">›</div>
+        <div class="card"><span class="number">2</span><h3>Move</h3><p>A framing guide and live cues support a short movement check.</p></div>
+        <div class="arrow">›</div>
+        <div class="card"><span class="number">3</span><h3>Check symptoms</h3><p>A complete, plain-language check-in decides review urgency.</p></div>
+        <div class="arrow">›</div>
+        <div class="card"><span class="number">4</span><h3>Review</h3><p>The clinician sees the result and approves or holds progression.</p></div>
+      </div>
+      <p class="lead" style="margin-top: 0.38in">The player experience works offline. When connected, derived metrics sync to the care dashboard. Raw camera media is never saved or uploaded.</p>
+      <span class="page-number">04</span>
+    </section>
+
+    <section class="slide compact">
+      <p class="eyebrow">Technical execution</p>
+      <h1>Private on the phone, accountable in the cloud.</h1>
+      <div class="grid-3">
+        <div class="card"><h3>Player PWA</h3><ul class="checks"><li>Next.js static export</li><li>IndexedDB offline data</li><li>Four UI languages</li><li>Installable service worker</li></ul></div>
+        <div class="card"><h3>On-device vision</h3><ul class="checks"><li>MediaPipe PoseLandmarker</li><li>Web Worker inference</li><li>Locally hosted model and WASM</li><li>No media persistence</li></ul></div>
+        <div class="card"><h3>Clinical sync</h3><ul class="checks"><li>Render Express API</li><li>PostgreSQL metrics store</li><li>Signed role sessions</li><li>Server-enforced symptom block</li></ul></div>
+      </div>
+      <div class="callout">59 unit and API tests, 12 mobile and desktop journeys, 100% deterministic-rules coverage, and zero npm audit findings.</div>
+      <span class="page-number">05</span>
+    </section>
+
+    <section class="slide">
+      <p class="eyebrow">Safety by architecture</p>
+      <h1>We do not automate medical clearance.</h1>
+      <div class="grid-2">
+        <div class="card"><h3>Hard boundaries</h3><ul class="checks"><li>Clinician approval is mandatory</li><li>Symptoms block advancement</li><li>AI cannot alter the stored stage</li><li>Camera metrics are observations, not diagnoses</li><li>No camera-media column exists</li></ul></div>
+        <div class="card"><h3>Evidence boundaries</h3><p>The ICC document supplies the 6 Rs framework and care-team guidance. Movement screens come from separate Level 4 expert consensus and are presented for clinician review, never as ICC pass thresholds.</p></div>
+      </div>
+      <p class="source">Sources: ICC Guidelines, pp. 2-7; Goom et al. 2019, pp. 3, 13, 17; Donnelly et al., “Reframing return-to-sport postpartum: the 6 Rs framework,” BJSM, 2022.</p>
+      <span class="page-number">06</span>
+    </section>
+
+    <section class="slide">
+      <p class="eyebrow">Impact and inclusion</p>
+      <h1>Designed for the player most likely to be left out.</h1>
+      <div class="grid-4">
+        <div class="card"><div class="metric">1</div><h3>phone</h3><p>No wearable or specialist camera is required for the prototype.</p></div>
+        <div class="card"><div class="metric">4</div><h3>languages</h3><p>English, Bengali, Hindi, and Urdu, including RTL layout.</p></div>
+        <div class="card"><div class="metric">0</div><h3>video uploads</h3><p>Camera processing stays in the browser.</p></div>
+        <div class="card"><div class="metric">6</div><h3>R stages</h3><p>A consistent path from Ready through Refine.</p></div>
+      </div>
+      <div class="callout">Offline-first design supports unstable connectivity and keeps the core journey demonstrable even when the cloud sleeps.</div>
+      <span class="page-number">07</span>
+    </section>
+
+    <section class="slide compact">
+      <p class="eyebrow">ICC pilot plan</p>
+      <h1>Start small, measure safely, then expand.</h1>
+      <div class="grid-3">
+        <div class="card"><span class="number">1</span><h3>Clinical review</h3><p>Have an ICC-aligned sports physician and women’s-health physiotherapist review wording, rules, and escalation.</p></div>
+        <div class="card"><span class="number">2</span><h3>Member pilot</h3><p>Run an 8 to 12 week usability pilot with one Member board, its care team, and a small voluntary cohort.</p></div>
+        <div class="card"><span class="number">3</span><h3>Measure</h3><p>Track completion, clinician response time, reported clarity, accessibility, and opt-in retention. Do not claim medical efficacy from a prototype pilot.</p></div>
+      </div>
+      <div class="callout">Pilot success means safer coordination and clearer support, not an automated return-to-play decision.</div>
+      <span class="page-number">08</span>
+    </section>
+
+    <section class="slide">
+      <p class="eyebrow">Sustainable scale</p>
+      <h1>Built for cricket, adaptable across sport.</h1>
+      <div class="grid-2">
+        <div class="card"><h3>ICC value</h3><p>A configurable Member-board platform can digitise a common framework while allowing local care pathways, languages, legislation, and clinical ownership.</p></div>
+        <div class="card"><h3>Cross-sport path</h3><p>The care-team workflow, symptom gates, on-device observations, and clinician review can support other sports. Each sport must supply and validate its own content and rules.</p></div>
+      </div>
+      <p class="lead" style="margin-top: 0.35in">A hosted institutional plan can fund maintenance while the player-facing experience remains affordable and accessible.</p>
+      <span class="page-number">09</span>
+    </section>
+
+    <section class="slide hero">
+      <p class="eyebrow">Team ComeBack</p>
+      <h1>Help every mother return with a plan, a voice, and a care team.</h1>
+      <div class="grid-2" style="max-width: 10in">
+        <div class="card"><h3>Nourin Zaman</h3><p>Player experience, visual design, accessibility, localisation, and demo narrative.</p></div>
+        <div class="card"><h3>Ashra Rahman Tuba</h3><p>Evidence, deterministic rules, clinician workflow, backend, and safety validation.</p></div>
+      </div>
+      <span class="pill">Live prototype: nourinzaman2005-droid.github.io/comeback/</span>
+      <span class="page-number">10</span>
+    </section>
+  </body>
+</html>

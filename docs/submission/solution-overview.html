@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ComeBack Solution Overview</title>
+    <link rel="stylesheet" href="submission.css" />
+  </head>
+  <body>
+    <section class="slide hero">
+      <p class="eyebrow">Solution overview | 1 of 5</p>
+      <h1>ComeBack</h1>
+      <p class="tagline">A local-first, clinician-connected companion that turns the ICC Return to Play Post-Pregnancy Guidelines into a clear, measurable journey back to cricket.</p>
+      <div class="grid-3" style="margin-top: 0.35in; max-width: 12in">
+        <div class="card"><h3>For the player</h3><p>One next step in her language, on her phone.</p></div>
+        <div class="card"><h3>For the clinician</h3><p>Movement observations, symptoms, and approval control.</p></div>
+        <div class="card"><h3>For the ICC</h3><p>A practical digital layer for a new Member-board framework.</p></div>
+      </div>
+      <span class="page-number">01</span>
+    </section>
+
+    <section class="slide">
+      <p class="eyebrow">Problem | 2 of 5</p>
+      <h1>A guideline cannot help if the daily journey is unclear.</h1>
+      <div class="grid-2">
+        <div class="card"><h3>The current gap</h3><ul><li>The ICC framework is published as a nine-page PDF.</li><li>Return support must be individualised across physical, psychological, social, and practical needs.</li><li>Players and care teams need a shared view of actions, symptoms, and decisions.</li></ul></div>
+        <div class="quote">“The guidelines serve as a template for Members, and strong support needs to be individualised to the specific needs of them and their family.”<br /><strong>Dr Philippa Inge, ICC Medical Advisory Committee</strong></div>
+      </div>
+      <p class="source">Source: ICC launch release and ICC Return to Play Post Pregnancy Guidelines, pp. 2-5, 22 Jun 2026.</p>
+      <span class="page-number">02</span>
+    </section>
+
+    <section class="slide">
+      <p class="eyebrow">Solution | 3 of 5</p>
+      <h1>A simple loop that keeps clinical judgment in control.</h1>
+      <div class="flow compact">
+        <div class="card"><span class="number">1</span><h3>Roadmap</h3><p>The 6 Rs with cited guidance.</p></div>
+        <div class="arrow">›</div>
+        <div class="card"><span class="number">2</span><h3>Observe</h3><p>On-device camera metrics and symptom check-in.</p></div>
+        <div class="arrow">›</div>
+        <div class="card"><span class="number">3</span><h3>Sync</h3><p>Derived metrics only, with offline resilience.</p></div>
+        <div class="arrow">›</div>
+        <div class="card"><span class="number">4</span><h3>Decide</h3><p>Clinician approves or holds one stage.</p></div>
+      </div>
+      <div class="grid-2" style="margin-top: 0.3in">
+        <div class="card"><h3>Privacy</h3><p>MediaPipe runs in a Web Worker. Camera frames are processed in memory and never stored or uploaded.</p></div>
+        <div class="card"><h3>Safety</h3><p>Symptoms block approval. AI explains cited content but cannot diagnose, clear, or modify a stage.</p></div>
+      </div>
+      <span class="page-number">03</span>
+    </section>
+
+    <section class="slide compact">
+      <p class="eyebrow">Feasibility | 4 of 5</p>
+      <h1>A working prototype, not a concept screen.</h1>
+      <div class="grid-3">
+        <div class="card"><h3>Frontend</h3><ul class="checks"><li>Installable GitHub Pages PWA</li><li>Offline IndexedDB journey</li><li>English, Bengali, Hindi, Urdu</li><li>Accessible mobile-first UI</li></ul></div>
+        <div class="card"><h3>Intelligence</h3><ul class="checks"><li>Four pose-supported tests</li><li>Deterministic 6 Rs rules</li><li>Cited no-key explanation fallback</li><li>Optional free Groq wording layer</li></ul></div>
+        <div class="card"><h3>Care connection</h3><ul class="checks"><li>Clinician queue and review</li><li>Server-side symptom block</li><li>Render/PostgreSQL Blueprint</li><li>Signed red-flag webhook option</li></ul></div>
+      </div>
+      <div class="callout">Verified locally: 59 unit/API tests, 12 mobile and desktop journeys, 100% rules coverage, and all files below 40 MB.</div>
+      <span class="page-number">04</span>
+    </section>
+
+    <section class="slide">
+      <p class="eyebrow">Impact | 5 of 5</p>
+      <h1>A pilot path for more supported returns.</h1>
+      <div class="grid-2">
+        <div class="card"><h3>Immediate value</h3><ul><li>Players see a clear, translated next step.</li><li>Clinicians retain approval authority.</li><li>Member boards gain an auditable implementation layer.</li><li>Offline and phone-first design broadens access.</li></ul></div>
+        <div class="card"><h3>Responsible pilot</h3><ol><li>Clinical and legal review.</li><li>One Member-board usability pilot.</li><li>Measure completion, clarity, accessibility, and clinician response.</li><li>Adapt for other sports only with sport-specific evidence.</li></ol></div>
+      </div>
+      <div class="callout">ComeBack does not replace a care team. It helps the player and care team move through the same plan together.</div>
+      <p class="source">Team: Nourin Zaman and Ashra Rahman Tuba. Prototype: https://nourinzaman2005-droid.github.io/comeback/</p>
+      <span class="page-number">05</span>
+    </section>
+  </body>
+</html>

@@ -20,23 +20,24 @@ Open `/clinician` in another tab on the same origin. The local demo adapter shar
 - disabled approval whenever the latest check-in reports a symptom;
 - immediate stage updates in the player tab.
 
-This local adapter is for an end-to-end competition demonstration. It does not pretend to be remote multi-device sync.
+This local adapter remains available for a resilient end-to-end competition demonstration. When the Render API URL is configured, the same actions also sync through PostgreSQL so a player and clinician can use separate devices.
 
-## Supabase deployment
+## Render and PostgreSQL deployment
 
-The free Supabase backend is ready but cannot be deployed until a project URL, anon key, and user authentication are available.
+The repository contains a Render Blueprint that provisions the Node API and a PostgreSQL database without placing credentials in Git.
 
-1. Create a free Supabase project.
-2. Run `supabase/migrations/202609250001_initial.sql` with the Supabase CLI or SQL editor.
-3. Deploy `supabase/functions/red-flag-alert`.
-4. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in Vercel.
-5. Provide the signed-in Supabase access token to `flushSyncQueue` from the future auth session.
-6. Optionally set `CLINICIAN_ALERT_WEBHOOK_URL` for a metadata-only alert webhook. The function sends a test identifier and symptom count, not the symptom text or video.
+1. Open `https://render.com/deploy?repo=https://github.com/nourinzaman2005-droid/comeback` while signed in to Render.
+2. Create the Blueprint resources from `render.yaml`.
+3. Confirm the API health check at `https://comeback-api-nourin.onrender.com/health` reports `database: postgres`.
+4. If Render assigns a different service URL, update `NEXT_PUBLIC_API_URL` in `.github/workflows/pages.yml` and push the change.
+5. Optionally set `GROQ_API_KEY` for free-tier generated explanations. The cited deterministic fallback works without it.
+6. Optionally set `RED_FLAG_WEBHOOK_URL`. The API sends the player identifier, test identifier, symptom codes, and time; it never sends camera media.
 
-Row-level security ensures a player can access her own records and an accepted linked clinician can access linked records. Database triggers reject stage skipping, approval when symptoms are present, and direct player stage changes. Only metrics and symptom codes sync. The schema has no video field.
+The competition deployment uses signed, expiring demo sessions and server-side role checks. The API rejects player-ID mismatches, clinician approval when symptoms are present, and stage skipping. PostgreSQL stores only profiles, movement metrics, symptom codes, and clinician decisions; the schema has no camera-media field. Demo sessions must be replaced by production identity and clinician-link verification before handling real health data.
 
 ## Verification
 
 - Unit tests cover stage order and static security requirements.
 - Mobile E2E covers real onboarding, symptom-free check-in, clinician approval, player-stage update, symptom hold, approval prevention, and offline reload.
-- Live remote sync still requires the free Supabase project credentials described above.
+- API integration tests cover profile sync, clinician queues, one-stage approval, player refresh, and symptom-based approval blocking.
+- Live remote sync requires creating the Render Blueprint described above.
