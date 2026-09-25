@@ -37,7 +37,6 @@ import {
   getValue,
   putValue,
   saveWithQueue,
-  subscribeToData,
 } from "@/lib/data/indexed-db";
 import { flushSyncQueue, SyncSummary } from "@/lib/data/sync";
 import {
@@ -275,10 +274,8 @@ export function PlayerApp({
     };
     window.addEventListener("online", updateNetwork);
     window.addEventListener("offline", updateNetwork);
-    const unsubscribe = subscribeToData(() => void load());
     return () => {
       window.clearTimeout(initialLoad);
-      unsubscribe();
       window.removeEventListener("online", updateNetwork);
       window.removeEventListener("offline", updateNetwork);
     };
@@ -311,7 +308,7 @@ export function PlayerApp({
     setMetrics(next);
   }, []);
 
-  const completeCheckIn = async () => {
+  const completeCheckIn = () => {
     if (!profile) return;
     const record: TestRecord = {
       id: `test-${crypto.randomUUID()}`,
@@ -330,7 +327,6 @@ export function PlayerApp({
       completedAt: new Date().toISOString(),
       syncStatus: "local-demo",
     };
-    await saveWithQueue("test", "tests", record);
     const nextProfile = {
       ...profile,
       stageStatus: symptoms.length
@@ -338,11 +334,18 @@ export function PlayerApp({
         : ("awaiting-review" as const),
       updatedAt: new Date().toISOString(),
     };
-    await putValue("profiles", nextProfile);
     setProfile(nextProfile);
     setLatest(record);
-    setSync(await flushSyncQueue());
     setPage("result");
+    void (async () => {
+      try {
+        await saveWithQueue("test", "tests", record);
+        await putValue("profiles", nextProfile);
+        setSync(await flushSyncQueue());
+      } catch {
+        setSync({ mode: "offline", synced: 0, pending: 1 });
+      }
+    })();
   };
 
   if (!loaded)

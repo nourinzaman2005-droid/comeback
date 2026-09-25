@@ -7,7 +7,6 @@ import type {
 
 const DB_NAME = "comeback-data";
 const DB_VERSION = 1;
-export const DATA_EVENT = "comeback:data-changed";
 
 type StoreName = "profiles" | "tests" | "decisions" | "syncQueue";
 type StoredValue = PlayerProfile | TestRecord | ClinicianDecision | SyncItem;
@@ -44,13 +43,6 @@ function requestResult<T>(request: IDBRequest<T>): Promise<T> {
   });
 }
 
-function announceChange() {
-  window.dispatchEvent(new Event(DATA_EVENT));
-  const channel = new BroadcastChannel("comeback-sync");
-  channel.postMessage({ type: "data-changed" });
-  channel.close();
-}
-
 export async function putValue(storeName: StoreName, value: StoredValue) {
   const database = await openDatabase();
   const transaction = database.transaction(storeName, "readwrite");
@@ -60,7 +52,6 @@ export async function putValue(storeName: StoreName, value: StoredValue) {
     transaction.onerror = () => reject(transaction.error);
   });
   database.close();
-  announceChange();
 }
 
 export async function getValue<T>(storeName: StoreName, id: string) {
@@ -116,16 +107,4 @@ export async function saveWithQueue(
     attempts: 0,
   };
   await putValue("syncQueue", item);
-}
-
-export function subscribeToData(callback: () => void) {
-  const channel = new BroadcastChannel("comeback-sync");
-  const onMessage = () => callback();
-  channel.addEventListener("message", onMessage);
-  window.addEventListener(DATA_EVENT, callback);
-  return () => {
-    channel.removeEventListener("message", onMessage);
-    channel.close();
-    window.removeEventListener(DATA_EVENT, callback);
-  };
 }

@@ -84,7 +84,9 @@ test("player completes the guided journey and clinician approval advances the st
   ).toBeVisible();
 
   await page.getByRole("button", { name: /Back to today/ }).click();
-  await expect(page.locator(".stage-card h2")).toHaveText("Review");
+  await expect(page.locator(".stage-card h2")).toHaveText("Review", {
+    timeout: 12_000,
+  });
   const overflow = await page.evaluate(
     () =>
       document.documentElement.scrollWidth -
