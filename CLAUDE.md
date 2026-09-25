@@ -583,7 +583,16 @@ gantt
 - **Research correction:** The official ICC document provides stage windows and general guidance but does not define camera-test pass thresholds or a complete automated clearance algorithm. Readiness tests and thresholds must be attributed to separate primary clinical sources and must not be presented as ICC criteria.
 - **Research correction:** Goom et al. 2019 classifies its postnatal load-impact and strength screening recommendations as Level 4 expert consensus. It is not a prescriptive protocol. Strength weakness directs rehabilitation but is not independently a barrier to return. Camera metrics remain observations for clinician review.
 - **Repository status:** Public repository at `https://github.com/nourinzaman2005-droid/comeback`. The local `main` branch tracks `origin/main`; CI and GitHub Pages deployment run on pushes.
-- **Next task:** Create the Render Blueprint, add the Groq key in Render, verify the authenticated remote flow on separate devices, perform the physical Android/count validation, record the demo video, and submit.
+- **25 Sep 2026 frontend redesign and end-to-end verification:**
+  - New design system in `app/globals.css`: plum ink, orchid, petal, lilac and blush tokens; Fraunces display plus DM Sans body; sentence-case labels; reduced-motion support.
+  - Player app: desktop sidebar rail plus two-column Today dashboard; mobile bottom navigation that hides during the three-step check-in, which now shows a step progress bar. The Today hero is a "return arc" that shows progress through the six stages.
+  - Journey is a vertical timeline and shows a role-specific cricket focus note in Recondition, cited to ICC page 6.
+  - Clinician portal: summary counts, status badge that reflects the real player state, readable test names, scrollable roster on mobile.
+  - Fixed: symptoms and camera readings carried over between check-ins; a test selected without starting the camera was saved as a squat; Fraunces was not applied to headings.
+  - New UI labels are translated into Bengali, Hindi and Urdu; `tests/i18n.test.ts` enforces complete, placeholder-consistent translations.
+  - `AUTH_RATE_LIMIT` env var added (default 30 per 10 minutes in production). The local Playwright server raises it because one suite run approaches the default limit, which caused intermittent failures.
+  - Verified: lint, 60 unit tests, production build, GitHub Pages static export, and 18 E2E journeys (54 of 54 across three repeated runs). Live smoke test passed on GitHub Pages plus the Render API (player demo loads, clinician demo lists linked players).
+- **Next task:** Verify the redesigned GitHub Pages deployment, perform the physical Android/count validation, verify the optional Groq-generated path, record the demo video, and submit.
 - **Decisions log:**
   - 24 Sep 2026: Problem statement 3 chosen. ComeBack idea locked after two research rounds (11 ideas evaluated).
   - 24 Sep 2026: Initial stack decided. LLM never decides progression.
@@ -605,3 +614,4 @@ gantt
   - 25 Sep 2026: A minimal plum return-arc and rose cricket-ball logo replaced generic letter and stethoscope brand marks across the product and favicon.
   - 25 Sep 2026: Player and clinician portals were separated with email/password authentication, verified-clinician linkage, chat, notifications, profile logout, camera framing improvements, and expanded mobile/desktop E2E coverage.
   - 25 Sep 2026: Obsolete Vercel, Supabase, legacy demo-app, and legacy onboarding files were removed. Offline retries now target the Render API.
+  - 25 Sep 2026: Frontend redesigned for desktop and mobile with a feminine plum and petal system and a return-arc progress hero. Check-in state bugs fixed and translations completed.

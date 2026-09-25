@@ -21,6 +21,18 @@ import {
   type TestRecord,
 } from "@/lib/data/types";
 
+const TEST_LABELS: Record<TestRecord["kind"], string> = {
+  squat: "Single-leg squat",
+  balance: "Single-leg balance",
+  hop: "Hop on the spot",
+  bridge: "Single-leg bridge",
+};
+
+function weeksSince(date: string) {
+  const elapsed = Date.now() - new Date(`${date}T00:00:00`).getTime();
+  return Math.max(0, Math.floor(elapsed / 604_800_000));
+}
+
 export function ClinicianDashboard({
   session,
   onLogout,
@@ -94,6 +106,21 @@ export function ClinicianDashboard({
     [selectedId, tests],
   );
   const latest = playerTests[0] ?? null;
+  const badge = latest?.symptoms.length
+    ? { tone: "flag", label: "Symptoms reported" }
+    : profile?.stageStatus === "awaiting-review"
+      ? { tone: "", label: "Review pending" }
+      : profile?.stageStatus === "held"
+        ? { tone: "flag", label: "Stage on hold" }
+        : latest
+          ? { tone: "calm", label: "Active" }
+          : { tone: "calm", label: "No check-in yet" };
+  const flaggedCount = profiles.filter((item) =>
+    tests.some((test) => test.playerId === item.id && test.symptoms.length > 0),
+  ).length;
+  const awaitingCount = profiles.filter(
+    (item) => item.stageStatus === "awaiting-review",
+  ).length;
 
   async function decide(decision: ClinicianDecision["decision"]) {
     if (!profile || !latest) return;
@@ -156,9 +183,22 @@ export function ClinicianDashboard({
       </header>
       <div className="clinician-layout">
         <aside className="player-list">
-          <span className="eyebrow">Linked players</span>
           <h2>Care overview</h2>
-          <p>Only players linked to this clinician appear here.</p>
+          <p>Only players linked to you appear here.</p>
+          <dl className="care-summary">
+            <div>
+              <dt>Players</dt>
+              <dd>{profiles.length}</dd>
+            </div>
+            <div>
+              <dt>To review</dt>
+              <dd>{awaitingCount}</dd>
+            </div>
+            <div className={flaggedCount ? "flagged" : ""}>
+              <dt>Symptoms</dt>
+              <dd>{flaggedCount}</dd>
+            </div>
+          </dl>
           {profiles.length === 0 && (
             <div className="empty-clinician">
               <UserRound size={26} />
@@ -168,33 +208,47 @@ export function ClinicianDashboard({
               </span>
             </div>
           )}
-          {profiles.map((item) => {
-            const itemTests = tests.filter((test) => test.playerId === item.id);
-            const hasFlag = itemTests.some((test) => test.symptoms.length > 0);
-            return (
-              <button
-                className={selectedId === item.id ? "selected" : ""}
-                data-player-id={item.id}
-                key={item.id}
-                onClick={() => setSelectedId(item.id)}
-              >
-                <span className="mini-avatar">
-                  {item.name.slice(0, 2).toUpperCase()}
-                </span>
-                <p>
-                  <strong>{item.name}</strong>
-                  <span>
-                    {item.role.replace("-", " ")} · {item.stage}
+          <div className="player-roster">
+            {profiles.map((item) => {
+              const itemTests = tests.filter(
+                (test) => test.playerId === item.id,
+              );
+              const hasFlag = itemTests.some(
+                (test) => test.symptoms.length > 0,
+              );
+              return (
+                <button
+                  className={selectedId === item.id ? "selected" : ""}
+                  data-player-id={item.id}
+                  key={item.id}
+                  onClick={() => setSelectedId(item.id)}
+                >
+                  <span className="mini-avatar">
+                    {item.name.slice(0, 2).toUpperCase()}
                   </span>
-                </p>
-                {hasFlag ? (
-                  <AlertTriangle className="alert-icon" size={18} />
-                ) : (
-                  <Check className="clear-icon" size={18} />
-                )}
-              </button>
-            );
-          })}
+                  <p>
+                    <strong>{item.name}</strong>
+                    <span>
+                      {item.stage}, {item.role.replace("-", " ")}
+                    </span>
+                  </p>
+                  {hasFlag ? (
+                    <AlertTriangle
+                      className="alert-icon"
+                      size={18}
+                      aria-label="Symptoms reported"
+                    />
+                  ) : (
+                    <Check
+                      className="clear-icon"
+                      size={18}
+                      aria-hidden="true"
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </aside>
 
         <section className="clinical-content">
@@ -208,24 +262,26 @@ export function ClinicianDashboard({
             <>
               <div className="clinical-heading">
                 <div>
-                  <span className="eyebrow">Player review</span>
                   <h2>{profile.name}</h2>
-                  <p>
-                    {profile.stage} · {profile.stageStatus.replace("-", " ")} ·{" "}
-                    {profile.role.replace("-", " ")}
-                  </p>
+                  <div className="heading-chips">
+                    <span className="chip chip-petal">
+                      Stage: {profile.stage}
+                    </span>
+                    <span className="chip chip-quiet capitalize">
+                      {profile.role.replace("-", " ")}
+                    </span>
+                    <span className="chip chip-quiet">
+                      {weeksSince(profile.deliveryDate)} weeks since birth
+                    </span>
+                  </div>
                 </div>
-                <span
-                  className={`review-badge ${latest?.symptoms.length ? "flag" : ""}`}
-                >
-                  {latest?.symptoms.length ? (
+                <span className={`review-badge ${badge.tone}`}>
+                  {badge.tone === "flag" ? (
                     <AlertTriangle size={15} />
                   ) : (
                     <Clock3 size={15} />
                   )}
-                  {latest?.symptoms.length
-                    ? "Symptoms reported"
-                    : "Review pending"}
+                  {badge.label}
                 </span>
               </div>
 
@@ -238,9 +294,7 @@ export function ClinicianDashboard({
                     <div>
                       <small>Latest check-in</small>
                       <h3>
-                        {latest
-                          ? latest.kind.replace("-", " ")
-                          : "No check-in yet"}
+                        {latest ? TEST_LABELS[latest.kind] : "No check-in yet"}
                       </h3>
                     </div>
                   </div>
@@ -259,7 +313,7 @@ export function ClinicianDashboard({
                         </div>
                         <div>
                           <strong>
-                            {latest.metrics.asymmetry?.toFixed(0) ?? "--"}°
+                            {latest.metrics.asymmetry?.toFixed(0) ?? "--"} deg
                           </strong>
                           <span>Side difference</span>
                         </div>
@@ -332,7 +386,7 @@ export function ClinicianDashboard({
                           className={`trend-dot ${test.symptoms.length ? "flag" : ""}`}
                         />
                         <p>
-                          <strong>{test.kind.replace("-", " ")}</strong>
+                          <strong>{TEST_LABELS[test.kind]}</strong>
                           <span>
                             {new Date(test.completedAt).toLocaleDateString()}
                           </span>
@@ -356,15 +410,14 @@ export function ClinicianDashboard({
 
               <section className="decision-card">
                 <div>
-                  <span className="eyebrow">Clinical decision</span>
-                  <h3>Keep the human gate</h3>
+                  <h3>Your clinical decision</h3>
                   <p>
                     Review the player directly and use your professional
                     judgement. Camera observations never determine this
                     decision.
                   </p>
                 </div>
-                <label>
+                <label className="decision-note">
                   Optional note
                   <textarea
                     value={note}

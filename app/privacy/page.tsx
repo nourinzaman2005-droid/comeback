@@ -5,9 +5,13 @@ export default function PrivacyPage() {
   return (
     <main className="policy-shell">
       <article className="policy-card">
-        <Link href="/"><ArrowLeft size={17} /> Back to ComeBack</Link>
-        <span className="policy-icon"><LockKeyhole size={27} /></span>
-        <p className="eyebrow">Privacy and consent</p>
+        <Link href="/">
+          <ArrowLeft size={17} /> Back to ComeBack
+        </Link>
+        <span className="policy-icon">
+          <LockKeyhole size={27} />
+        </span>
+        <p className="policy-kicker">Privacy and consent</p>
         <h1>Your camera is not your medical record.</h1>
         <p>
           ComeBack is a prototype care companion. It is not a medical device,
@@ -21,10 +25,10 @@ export default function PrivacyPage() {
         </p>
         <h2>What can be stored or shared</h2>
         <p>
-          Your profile, consent time, movement observations, symptom codes,
-          and clinician decisions are stored in IndexedDB for the local demo.
-          When the optional Render service is configured, only those fields
-          sync to PostgreSQL over HTTPS.
+          Your profile, consent time, movement observations, symptom codes, and
+          clinician decisions are stored in IndexedDB for the local demo. When
+          the optional Render service is configured, only those fields sync to
+          PostgreSQL over HTTPS.
         </p>
         <h2>Third-party runtime notice</h2>
         <p>
@@ -38,7 +42,13 @@ export default function PrivacyPage() {
           You can decline camera access, use the rest of the journey without a
           recording, erase local demo data from Profile, and stop at any time.
         </p>
-        <div className="policy-boundary"><ShieldCheck size={19} /><span>Stage progression always requires a linked clinician decision. AI explanations and camera observations cannot approve it.</span></div>
+        <div className="policy-boundary">
+          <ShieldCheck size={19} />
+          <span>
+            Stage progression always requires a linked clinician decision. AI
+            explanations and camera observations cannot approve it.
+          </span>
+        </div>
       </article>
     </main>
   );

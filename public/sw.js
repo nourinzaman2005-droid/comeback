@@ -1,4 +1,4 @@
-const CACHE_NAME = "comeback-shell-v3";
+const CACHE_NAME = "comeback-shell-v4";
 const SCOPE_PATH = new URL(self.registration.scope).pathname;
 const APP_SHELL = [
   SCOPE_PATH,

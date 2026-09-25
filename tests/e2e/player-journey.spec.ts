@@ -230,16 +230,16 @@ test("linked player and clinician can chat, receive notifications, and sign out"
   ).toBeVisible();
   await clinicianChat
     .getByRole("textbox", { name: "Write a message" })
-    .fill("Yes — I will review it after you save the check-in.");
+    .fill("Yes, I will review it after you save the check-in.");
   await clinicianChat.getByRole("button", { name: "Send message" }).click();
   await expect(
     clinicianChat.getByText(
-      "Yes — I will review it after you save the check-in.",
+      "Yes, I will review it after you save the check-in.",
     ),
   ).toBeVisible();
 
   await expect(
-    page.getByText("Yes — I will review it after you save the check-in."),
+    page.getByText("Yes, I will review it after you save the check-in."),
   ).toBeVisible({ timeout: 8_000 });
   await expect(
     page.getByRole("button", { name: /Notifications, \d+ unread/ }),
@@ -250,4 +250,47 @@ test("linked player and clinician can chat, receive notifications, and sign out"
     page.getByRole("heading", { name: /A private path/ }),
   ).toBeVisible();
   await expect(page).toHaveURL(/\/$/);
+});
+
+test("each new check-in starts clean and records the selected test", async ({
+  page,
+}) => {
+  await openDemo(page);
+  await page.getByRole("button", { name: /Camera-guided check-in/ }).click();
+  await page.getByRole("button", { name: /Open private camera/ }).click();
+  await page.getByRole("button", { name: /Single-leg balance/ }).click();
+  await page.getByRole("button", { name: /Continue to symptoms/ }).click();
+  await page.getByRole("checkbox").first().check();
+  await page.getByRole("button", { name: /Save and request review/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Pause and check in" }),
+  ).toBeVisible();
+  await expect(page.getByText("Single-leg balance")).toBeVisible();
+
+  await page.getByRole("button", { name: /Back to today/ }).click();
+  await page.getByRole("button", { name: /Camera-guided check-in/ }).click();
+  await page.getByRole("button", { name: /Open private camera/ }).click();
+  await page.getByRole("button", { name: /Continue to symptoms/ }).click();
+  for (const box of await page.getByRole("checkbox").all()) {
+    await expect(box).not.toBeChecked();
+  }
+  await expect(
+    page.getByRole("button", { name: /Save symptom-free check-in/ }),
+  ).toBeVisible();
+});
+
+test("desktop and mobile layouts keep navigation reachable without overflow", async ({
+  page,
+}) => {
+  await openDemo(page);
+  for (const name of ["Journey", "Support", "Profile", "Today"]) {
+    await page.getByRole("button", { name, exact: true }).click();
+    const overflow = await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  }
+  await expect(page.locator(".stage-card h2")).toHaveText("Ready");
 });

@@ -3,6 +3,7 @@
 import {
   ArrowRight,
   BadgeCheck,
+  Camera,
   Eye,
   EyeOff,
   LockKeyhole,
@@ -199,9 +200,9 @@ function AuthScreen({
           <span>{isPlayer ? "ComeBack" : "ComeBack Clinical"}</span>
         </div>
         <div>
-          <span className="eyebrow eyebrow-light">
+          <span className="auth-kicker">
             {isPlayer
-              ? "Your return, securely supported"
+              ? "For mothers returning to cricket"
               : "Verified care portal"}
           </span>
           <h1>
@@ -211,7 +212,7 @@ function AuthScreen({
           </h1>
           <p>
             {isPlayer
-              ? "Choose an ICC-registered clinician, follow your roadmap, and keep every conversation in one calm place."
+              ? "Follow the ICC's six-stage return to play with your own clinician, camera check-ins that stay on your phone, and every conversation in one calm place."
               : "Review linked players, respond to symptoms, message securely, and control every stage decision."}
           </p>
         </div>
@@ -223,7 +224,7 @@ function AuthScreen({
             <ShieldCheck size={18} /> Role-separated access
           </span>
           <span>
-            <Sparkles size={18} /> Camera stays on device
+            <Camera size={18} /> Camera stays on device
           </span>
         </div>
       </section>
@@ -233,7 +234,7 @@ function AuthScreen({
           <span className="auth-role-icon">
             {isPlayer ? <Sparkles size={23} /> : <Stethoscope size={23} />}
           </span>
-          <p className="eyebrow">
+          <p className="auth-portal-label">
             {isPlayer ? "Player portal" : "Clinician portal"}
           </p>
           <h2>

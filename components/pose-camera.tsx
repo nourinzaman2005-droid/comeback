@@ -1,7 +1,13 @@
 "use client";
 
 import { Camera, CameraOff, LockKeyhole, RotateCcw } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   initialSessionState,
   LandmarkSmoother,
@@ -71,8 +77,10 @@ function drawPose(canvas: HTMLCanvasElement, points: Landmark[]) {
 
 export function PoseCamera({
   onMetrics,
+  action,
 }: {
   onMetrics?: (kind: TestKind, metrics: CameraMetrics) => void;
+  action?: ReactNode;
 }) {
   const [kind, setKind] = useState<TestKind>("squat");
   const [status, setStatus] = useState<Status>("idle");
@@ -222,6 +230,9 @@ export function PoseCamera({
   const selectTest = (nextKind: TestKind) => {
     setKind(nextKind);
     reset(nextKind);
+    // Report the chosen test straight away so a check-in saved without the
+    // camera is still recorded against the test the player selected.
+    onMetrics?.(nextKind, blankMetrics);
   };
 
   const selected = TESTS.find((test) => test.id === kind)!;
@@ -232,109 +243,115 @@ export function PoseCamera({
 
   return (
     <div className="pose-test">
-      <div className="test-picker" aria-label="Choose camera test">
-        {TESTS.map((test) => (
+      <div className="pose-stage">
+        <div className="real-camera">
+          <video
+            ref={videoRef}
+            muted
+            playsInline
+            aria-label="Live camera preview"
+          />
+          <canvas ref={canvasRef} width={720} height={960} aria-hidden="true" />
+          <div className={`camera-status camera-${status}`}>
+            <i /> {status === "running" ? "On-device tracking" : "Camera off"}
+          </div>
+          <div className="rep-counter">
+            <strong>{displayValue}</strong>
+            <span>{kind === "balance" ? "hold" : "observed"}</span>
+          </div>
+          {status === "idle" && (
+            <div className="camera-empty">
+              <Camera size={34} />
+              <strong>{selected.label}</strong>
+              <span>
+                Place the phone 2 to 3 metres away so your full body fits.
+              </span>
+              <button type="button" onClick={startCamera}>
+                Start camera
+              </button>
+            </div>
+          )}
+          {status === "loading" && (
+            <div className="camera-empty">
+              <span className="camera-spinner" />
+              <strong>Preparing private pose tracking</strong>
+              <span>The local model may take a moment the first time.</span>
+            </div>
+          )}
+          {status === "error" && (
+            <div className="camera-empty camera-error" role="alert">
+              <CameraOff size={32} />
+              <strong>Camera needs attention</strong>
+              <span>{message}</span>
+              <button type="button" onClick={startCamera}>
+                Try again
+              </button>
+            </div>
+          )}
+          {status === "running" && (
+            <div className={`form-cue framing-${metrics.framing}`}>
+              {metrics.cue}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="pose-side">
+        <div
+          className="test-picker"
+          role="group"
+          aria-label="Choose camera test"
+        >
+          {TESTS.map((test) => (
+            <button
+              key={test.id}
+              className={kind === test.id ? "selected" : ""}
+              aria-pressed={kind === test.id}
+              onClick={() => selectTest(test.id)}
+              type="button"
+            >
+              <strong>{test.label}</strong>
+              <span>{test.target}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="observation-grid" aria-label="Movement observations">
+          <div>
+            <span>Knee angle</span>
+            <strong>{metrics.kneeAngle?.toFixed(0) ?? "--"} deg</strong>
+          </div>
+          <div>
+            <span>Depth change</span>
+            <strong>{metrics.squatDepth?.toFixed(0) ?? "--"} deg</strong>
+          </div>
+          <div>
+            <span>Side difference</span>
+            <strong>{metrics.asymmetry?.toFixed(0) ?? "--"} deg</strong>
+          </div>
+          <div>
+            <span>FPPA offset</span>
+            <strong>{metrics.fppa?.toFixed(0) ?? "--"}%</strong>
+          </div>
+          <div>
+            <span>Processing</span>
+            <strong>{metrics.fps ? metrics.fps.toFixed(0) : "--"} fps</strong>
+          </div>
           <button
-            key={test.id}
-            className={kind === test.id ? "selected" : ""}
-            onClick={() => selectTest(test.id)}
+            className="reset-measurement"
             type="button"
+            onClick={() => reset()}
           >
-            <strong>{test.label}</strong>
-            <span>{test.target}</span>
+            <RotateCcw size={15} /> Reset
           </button>
-        ))}
+        </div>
+        {action}
+        <p className="fine-print">
+          <LockKeyhole size={15} /> Measurements describe movement only. They do
+          not score readiness or provide medical clearance. Manual-count
+          validation on a physical Android phone is still pending.
+        </p>
       </div>
-
-      <div className="real-camera">
-        <video
-          ref={videoRef}
-          muted
-          playsInline
-          aria-label="Live camera preview"
-        />
-        <canvas ref={canvasRef} width={720} height={960} aria-hidden="true" />
-        <div className={`camera-status camera-${status}`}>
-          <i />{" "}
-          {status === "running" ? "On-device pose" : "Camera not recording"}
-        </div>
-        <div className="rep-counter">
-          <strong>{displayValue}</strong>
-          <span>{kind === "balance" ? "hold" : "observed"}</span>
-        </div>
-        {status === "idle" && (
-          <div className="camera-empty">
-            <Camera size={36} />
-            <strong>{selected.label}</strong>
-            <span>
-              Place the phone 2 to 3 metres away so your full body fits.
-            </span>
-            <button type="button" onClick={startCamera}>
-              Start camera
-            </button>
-          </div>
-        )}
-        {status === "loading" && (
-          <div className="camera-empty">
-            <span className="camera-spinner" />
-            <strong>Preparing private pose tracking</strong>
-            <span>The local model may take a moment the first time.</span>
-          </div>
-        )}
-        {status === "error" && (
-          <div className="camera-empty camera-error" role="alert">
-            <CameraOff size={34} />
-            <strong>Camera needs attention</strong>
-            <span>{message}</span>
-            <button type="button" onClick={startCamera}>
-              Try again
-            </button>
-          </div>
-        )}
-        {status === "running" && (
-          <div className={`form-cue framing-${metrics.framing}`}>
-            {metrics.cue}
-          </div>
-        )}
-      </div>
-
-      <div className="observation-grid" aria-label="Movement observations">
-        <div>
-          <span>Knee angle</span>
-          <strong>{metrics.kneeAngle?.toFixed(0) ?? "--"} deg</strong>
-        </div>
-        <div>
-          <span>Depth change</span>
-          <strong>{metrics.squatDepth?.toFixed(0) ?? "--"} deg</strong>
-        </div>
-        <div>
-          <span>Side difference</span>
-          <strong>{metrics.asymmetry?.toFixed(0) ?? "--"} deg</strong>
-        </div>
-        <div>
-          <span>FPPA offset</span>
-          <strong>{metrics.fppa?.toFixed(0) ?? "--"}%</strong>
-        </div>
-        <div>
-          <span>Processing</span>
-          <strong>{metrics.fps ? metrics.fps.toFixed(0) : "--"} fps</strong>
-        </div>
-      </div>
-      <button
-        className="reset-measurement"
-        type="button"
-        onClick={() => reset()}
-      >
-        <RotateCcw size={15} /> Reset observations
-      </button>
-      <p className="camera-boundary">
-        <LockKeyhole size={15} /> Measurements describe movement only. They do
-        not score readiness or provide medical clearance.
-      </p>
-      <p className="accuracy-boundary">
-        Prototype measurement note: manual-count validation on a physical
-        Android phone is still pending.
-      </p>
     </div>
   );
 }

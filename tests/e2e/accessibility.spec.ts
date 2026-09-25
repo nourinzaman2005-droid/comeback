@@ -14,7 +14,7 @@ test("player and clinician entry screens have no automatic accessibility violati
 
   await page.getByRole("button", { name: /2-minute player demo/ }).click();
   await expect(
-    page.getByRole("heading", { name: /Welcome back/ }),
+    page.getByRole("heading", { name: /Welcome back, / }),
   ).toBeVisible();
   await page.waitForTimeout(600);
   const player = await new AxeBuilder({ page }).analyze();

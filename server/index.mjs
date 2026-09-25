@@ -304,13 +304,17 @@ app.get("/health", async (_request, response) => {
 });
 
 const authAttempts = new Map();
+// Production keeps the default of 30 attempts per 10 minutes. The local
+// end-to-end suite raises it because it creates many accounts in one run.
+const authAttemptLimit = Number(process.env.AUTH_RATE_LIMIT ?? 30);
+
 function authRateLimit(request, response, next) {
   const now = Date.now();
   const key = request.ip ?? "unknown";
   const recent = (authAttempts.get(key) ?? []).filter(
     (time) => now - time < 10 * 60_000,
   );
-  if (recent.length >= 30)
+  if (recent.length >= authAttemptLimit)
     return response.status(429).json({ error: "Too many sign-in attempts" });
   recent.push(now);
   authAttempts.set(key, recent);
