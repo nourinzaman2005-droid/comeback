@@ -3,7 +3,14 @@ import { join, relative } from "node:path";
 
 const root = process.cwd();
 const limit = 40 * 1024 * 1024;
-const ignored = new Set([".git", ".next", ".vercel", "node_modules", "coverage", "test-results", "playwright-report"]);
+const ignored = new Set([
+  ".git",
+  ".next",
+  "node_modules",
+  "coverage",
+  "test-results",
+  "playwright-report",
+]);
 const oversized = [];
 
 async function visit(directory) {
@@ -13,7 +20,8 @@ async function visit(directory) {
     if (entry.isDirectory()) await visit(path);
     if (entry.isFile()) {
       const details = await stat(path);
-      if (details.size >= limit) oversized.push(`${relative(root, path)} (${details.size} bytes)`);
+      if (details.size >= limit)
+        oversized.push(`${relative(root, path)} (${details.size} bytes)`);
     }
   }
 }

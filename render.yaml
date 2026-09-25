@@ -20,6 +20,8 @@ services:
         generateValue: true
       - key: FRONTEND_ORIGIN
         value: https://nourinzaman2005-droid.github.io
+      - key: GROQ_API_KEY
+        sync: false
 databases:
   - name: comeback-postgres
     plan: free

@@ -64,6 +64,49 @@ export type SyncItem = {
   attempts: number;
 };
 
+export type AccountRole = "player" | "clinician";
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  role: AccountRole;
+  name: string;
+};
+
+export type AuthSession = {
+  token: string;
+  user: AuthUser;
+  expiresInSeconds: number;
+};
+
+export type ClinicianDirectoryItem = {
+  id: string;
+  displayName: string;
+  specialty: string;
+  memberBoard: string;
+  verified: boolean;
+};
+
+export type CareMessage = {
+  id: string;
+  playerId: string;
+  clinicianId: string;
+  senderRole: AccountRole;
+  body: string;
+  createdAt: string;
+  readByPlayer: boolean;
+  readByClinician: boolean;
+};
+
+export type AppNotification = {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  readAt: string | null;
+};
+
 export const DEMO_PROFILE: PlayerProfile = {
   id: "player-nourin-demo",
   name: "Nourin",

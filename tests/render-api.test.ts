@@ -8,26 +8,56 @@ const api = `http://127.0.0.1:${port}`;
 let server: ChildProcess;
 
 async function waitForServer() {
-  for (let attempt = 0; attempt < 40; attempt += 1) {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
     try {
       const response = await fetch(`${api}/health`);
       if (response.ok) return;
     } catch {
-      // The process is still starting.
+      // Password hashing can make the first local startup take a moment.
     }
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
   throw new Error("Render API did not start");
 }
 
-async function demoToken(role: "player" | "clinician", playerId?: string) {
-  const response = await fetch(`${api}/api/demo/session`, {
+async function signIn(
+  role: "player" | "clinician",
+  email: string,
+  password: string,
+) {
+  const response = await fetch(`${api}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ role, playerId }),
+    body: JSON.stringify({ role, email, password }),
   });
   expect(response.ok).toBe(true);
-  return ((await response.json()) as { token: string }).token;
+  return (await response.json()) as {
+    token: string;
+    user: { id: string; role: string };
+  };
+}
+
+async function registerPlayer(email: string, name: string) {
+  const response = await fetch(`${api}/api/auth/register/player`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email,
+      password: "PlayerPass2026!",
+      name,
+      deliveryDate: "2026-05-01",
+      deliveryType: "vaginal",
+      cricketRole: "batter",
+      language: "en",
+      clinicianId: "clinician-maya-demo",
+      consent: true,
+    }),
+  });
+  expect(response.status).toBe(201);
+  return (await response.json()) as {
+    token: string;
+    user: { id: string; role: string };
+  };
 }
 
 function authorized(token: string, body?: unknown) {
@@ -40,7 +70,7 @@ function authorized(token: string, body?: unknown) {
   };
 }
 
-describe("Render API end-to-end workflow", () => {
+describe("Render API authenticated end-to-end workflow", () => {
   beforeAll(async () => {
     server = spawn(process.execPath, ["server/index.mjs"], {
       cwd: process.cwd(),
@@ -50,42 +80,33 @@ describe("Render API end-to-end workflow", () => {
         DEMO_MODE: "true",
         SESSION_SECRET: "test-session-secret-that-is-not-used-in-production",
         DATABASE_URL: "",
+        GROQ_API_KEY: "",
       },
       stdio: "ignore",
     });
     await waitForServer();
   });
 
-  afterAll(() => {
-    server?.kill();
-  });
+  afterAll(() => server?.kill());
 
-  it("syncs a check-in, clinician approval, and stage change", async () => {
-    const playerId = "api-player";
-    const playerToken = await demoToken("player", playerId);
-    const clinicianToken = await demoToken("clinician");
+  it("authenticates separate roles, chats, notifies, and advances one stage", async () => {
+    const player = await signIn(
+      "player",
+      "nourin@comeback.demo",
+      "ComeBack2026!",
+    );
+    const clinician = await signIn(
+      "clinician",
+      "maya.rahman@icc-demo.org",
+      "CareTeam2026!",
+    );
+    const playerId = player.user.id;
     const timestamp = new Date().toISOString();
 
-    const profile = {
-      id: playerId,
-      name: "Nourin",
-      deliveryDate: "2026-06-04",
-      deliveryType: "caesarean",
-      role: "bowler",
-      language: "en",
-      consentAt: timestamp,
-      stage: "Restore",
-      stageStatus: "active",
-      updatedAt: timestamp,
-    };
     expect(
-      (
-        await fetch(`${api}/api/players/${playerId}`, {
-          method: "PUT",
-          ...authorized(playerToken, profile),
-        })
-      ).ok,
-    ).toBe(true);
+      (await fetch(`${api}/api/clinician/players`, authorized(player.token)))
+        .status,
+    ).toBe(403);
 
     const test = {
       id: "api-test-clear",
@@ -100,29 +121,56 @@ describe("Render API end-to-end workflow", () => {
       (
         await fetch(`${api}/api/tests`, {
           method: "POST",
-          ...authorized(playerToken, test),
+          ...authorized(player.token, test),
         })
       ).status,
     ).toBe(201);
 
     const queue = await fetch(
       `${api}/api/clinician/players`,
-      authorized(clinicianToken),
+      authorized(clinician.token),
     );
     const players = (await queue.json()) as Array<{
       id: string;
       stageStatus: string;
       tests: Array<{ id: string }>;
     }>;
-    expect(players[0]).toMatchObject({
+    expect(players.find((value) => value.id === playerId)).toMatchObject({
       id: playerId,
       stageStatus: "awaiting-review",
       tests: [{ id: test.id }],
     });
 
+    const sent = await fetch(`${api}/api/messages`, {
+      method: "POST",
+      ...authorized(player.token, { playerId, body: "My check-in is ready." }),
+    });
+    expect(sent.status).toBe(201);
+    const conversation = await fetch(
+      `${api}/api/messages?playerId=${playerId}`,
+      authorized(clinician.token),
+    );
+    expect(await conversation.json()).toEqual([
+      expect.objectContaining({
+        body: "My check-in is ready.",
+        senderRole: "player",
+      }),
+    ]);
+
+    const clinicianNotifications = await fetch(
+      `${api}/api/notifications`,
+      authorized(clinician.token),
+    );
+    expect(await clinicianNotifications.json()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "check-in" }),
+        expect.objectContaining({ type: "message" }),
+      ]),
+    );
+
     const decision = await fetch(`${api}/api/decisions`, {
       method: "POST",
-      ...authorized(clinicianToken, {
+      ...authorized(clinician.token, {
         id: "api-decision-approve",
         playerId,
         testId: test.id,
@@ -137,40 +185,34 @@ describe("Render API end-to-end workflow", () => {
 
     const refreshed = await fetch(
       `${api}/api/players/${playerId}`,
-      authorized(playerToken),
+      authorized(player.token),
     );
     expect(await refreshed.json()).toMatchObject({
       stage: "Recondition",
       stageStatus: "active",
     });
+    const playerNotifications = await fetch(
+      `${api}/api/notifications`,
+      authorized(player.token),
+    );
+    expect(await playerNotifications.json()).toEqual(
+      expect.arrayContaining([expect.objectContaining({ type: "decision" })]),
+    );
   });
 
-  it("blocks approval when symptoms were reported", async () => {
-    const playerId = "symptom-player";
-    const playerToken = await demoToken("player", playerId);
-    const clinicianToken = await demoToken("clinician");
+  it("blocks symptom approval for a registered linked player", async () => {
+    const player = await registerPlayer("ashra-api@example.com", "Ashra");
+    const clinician = await signIn(
+      "clinician",
+      "maya.rahman@icc-demo.org",
+      "CareTeam2026!",
+    );
     const timestamp = new Date().toISOString();
-
-    await fetch(`${api}/api/players/${playerId}`, {
-      method: "PUT",
-      ...authorized(playerToken, {
-        id: playerId,
-        name: "Ashra",
-        deliveryDate: "2026-05-01",
-        deliveryType: "vaginal",
-        role: "batter",
-        language: "en",
-        consentAt: timestamp,
-        stage: "Review",
-        stageStatus: "active",
-        updatedAt: timestamp,
-      }),
-    });
     await fetch(`${api}/api/tests`, {
       method: "POST",
-      ...authorized(playerToken, {
+      ...authorized(player.token, {
         id: "api-test-symptom",
-        playerId,
+        playerId: player.user.id,
         kind: "balance",
         side: "left",
         metrics: { holdSeconds: 12 },
@@ -181,9 +223,9 @@ describe("Render API end-to-end workflow", () => {
 
     const decision = await fetch(`${api}/api/decisions`, {
       method: "POST",
-      ...authorized(clinicianToken, {
+      ...authorized(clinician.token, {
         id: "api-decision-blocked",
-        playerId,
+        playerId: player.user.id,
         testId: "api-test-symptom",
         decision: "approve",
         note: "Should not advance",
