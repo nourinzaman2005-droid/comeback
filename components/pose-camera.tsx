@@ -145,6 +145,18 @@ export function PoseCamera({
         audio: false,
       });
       streamRef.current = stream;
+      const videoTrack = stream.getVideoTracks()[0];
+      const capabilities = videoTrack?.getCapabilities() as
+        (MediaTrackCapabilities & { zoom?: { min: number } }) | undefined;
+      if (capabilities?.zoom) {
+        await videoTrack
+          .applyConstraints({
+            advanced: [
+              { zoom: capabilities.zoom.min } as MediaTrackConstraintSet,
+            ],
+          })
+          .catch(() => undefined);
+      }
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
@@ -254,7 +266,9 @@ export function PoseCamera({
           <div className="camera-empty">
             <Camera size={36} />
             <strong>{selected.label}</strong>
-            <span>Frames are measured on this device.</span>
+            <span>
+              Place the phone 2 to 3 metres away so your full body fits.
+            </span>
             <button type="button" onClick={startCamera}>
               Start camera
             </button>

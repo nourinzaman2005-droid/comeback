@@ -183,7 +183,7 @@ The ICC published its post-pregnancy return-to-play guidelines as a PDF. ComeBac
 - **Return:** return to play
 - **Refine:** ongoing monitoring
 
-TODO (Tier 1): download and read the actual ICC PDF. Extract every stage, criterion, time guideline, red flag, and test into `content/guidelines/icc-2026.json` with section references. Do not invent criteria.
+Completed in Tier 1: the official ICC PDF was reviewed and stage guidance was extracted into `content/guidelines/icc-2026.json` with page and section references. Camera thresholds remain separately attributed and are never presented as ICC criteria.
 
 ### 6.2 Postnatal return-to-impact tests (Goom, Donnelly, Brockwell 2019)
 
@@ -212,18 +212,18 @@ Summary from secondary sources. VERIFY against the original document before impl
 
 ### 7.1 Tech stack (decided; change only with user approval)
 
-| Layer             | Choice                                                                               | Why                                                                                                           |
-| ----------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| Frontend          | Next.js (App Router) + TypeScript + Tailwind CSS, installable PWA                    | One codebase for player and clinician views, works on phones, offline via service worker                      |
-| Pose estimation   | MediaPipe Tasks Vision `PoseLandmarker` (WASM, runs in the browser, in a Web Worker) | On-device, free, video never leaves the phone                                                                 |
-| Local storage     | Native IndexedDB                                                                      | Offline-first, no additional runtime dependency                                                               |
-| Backend           | Render Node/Express API + Render PostgreSQL                                          | Free-tier remote demo sync with server-side role and safety checks                                             |
-| Rules engine      | Pure TypeScript module, deterministic, fully unit tested                             | Safety: progression logic is predictable and auditable                                                        |
-| Guideline content | Structured JSON extracted from the ICC PDF, with section references                  | Traceable citations                                                                                           |
-| AI layer          | Optional Groq API via the Render API, with deterministic cited fallback             | Free-tier plain-language explanations and translation. Never decides progression                              |
-| i18n              | Typed UI dictionaries: en, hi, ur (RTL), bn                                         | Multi-language requirement without a client runtime dependency                                                |
-| Hosting           | GitHub Pages (static frontend) + Render (API and PostgreSQL)                         | Public HTTPS frontend plus a free cloud demo backend                                                           |
-| Testing           | Vitest (unit), Playwright (e2e)                                                      | Rules engine and flows must be tested                                                                         |
+| Layer             | Choice                                                                               | Why                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| Frontend          | Next.js (App Router) + TypeScript + Tailwind CSS, installable PWA                    | One codebase for player and clinician views, works on phones, offline via service worker |
+| Pose estimation   | MediaPipe Tasks Vision `PoseLandmarker` (WASM, runs in the browser, in a Web Worker) | On-device, free, video never leaves the phone                                            |
+| Local storage     | Native IndexedDB                                                                     | Offline-first, no additional runtime dependency                                          |
+| Backend           | Render Node/Express API + Render PostgreSQL                                          | Free-tier remote demo sync with server-side role and safety checks                       |
+| Rules engine      | Pure TypeScript module, deterministic, fully unit tested                             | Safety: progression logic is predictable and auditable                                   |
+| Guideline content | Structured JSON extracted from the ICC PDF, with section references                  | Traceable citations                                                                      |
+| AI layer          | Optional Groq API via the Render API, with deterministic cited fallback              | Free-tier plain-language explanations and translation. Never decides progression         |
+| i18n              | Typed UI dictionaries: en, hi, ur (RTL), bn                                          | Multi-language requirement without a client runtime dependency                           |
+| Hosting           | GitHub Pages (static frontend) + Render (API and PostgreSQL)                         | Public HTTPS frontend plus a free cloud demo backend                                     |
+| Testing           | Vitest (unit), Playwright (e2e)                                                      | Rules engine and flows must be tested                                                    |
 
 ### 7.2 System architecture
 
@@ -238,16 +238,16 @@ flowchart TB
         end
         RULES["Rules engine<br/>(deterministic 6 Rs state machine)"]
         GUIDE["Guideline JSON<br/>ICC 2026 with section refs"]
-        IDB["IndexedDB (Dexie)<br/>local data, sync queue"]
+        IDB["Native IndexedDB<br/>local data, sync queue"]
         SW["Service worker<br/>offline cache"]
     end
 
     subgraph Cloud["Cloud"]
-        API["Render Node/Express API<br/>signed demo sessions"]
+        API["Render Node/Express API<br/>email/password auth"]
         LLM["Groq API<br/>explain, personalise wording, translate"]
         subgraph RENDER["Render"]
-            AUTH["HMAC session + role checks"]
-            DB["PostgreSQL<br/>metrics only, no video"]
+            AUTH["bcrypt + HMAC sessions<br/>role and linkage checks"]
+            DB["PostgreSQL<br/>accounts, metrics, chat, no video"]
             EF["API webhook<br/>red-flag alerts"]
         end
     end
@@ -269,6 +269,8 @@ flowchart TB
     DB --> EF
     EF -- "red flag notification" --> DASH
     DASH -- "approve / hold stage" --> API
+    UI -- "private care chat" --> API
+    API -- "messages + notifications" --> DASH
 ```
 
 ### 7.3 6 Rs stage state machine (rules engine)
@@ -442,7 +444,8 @@ gantt
 
 ### Tier 3: Player app flow (Days 4 to 5)
 
-- [x] Build onboarding for consent, delivery date, delivery type, role, and language.
+- [x] Build player email/password registration for consent, delivery date, delivery type, role, language, and verified-clinician selection.
+- [x] Keep the player and clinician portals role-separated with no cross-dashboard navigation.
 - [x] Build the roadmap view with current R stage, next steps, and cited guideline text.
 - [x] Build the test flow, symptom check-in, and result screen.
 - [x] Store player data offline in IndexedDB.
@@ -451,8 +454,10 @@ gantt
 ### Tier 4: Clinician dashboard and sync (Days 5 to 6)
 
 - [x] Implement the Render/PostgreSQL schema and API role checks so a player can access only her identity and clinician actions require a clinician session.
+- [x] Implement clinician email/password activation against the verified fictional ICC directory.
 - [x] Implement local-first and remote sync for metrics only, never video.
 - [x] Build the clinician dashboard with player list, observations, red flags, and approve/hold stage actions.
+- [x] Build linked player-clinician chat and persistent in-app notifications.
 - [x] Implement an optional signed, metadata-only red-flag webhook in the Render API.
 - [ ] **Exit:** verify on the live Render service that a dashboard approval advances the player's stage on a separate phone.
 
@@ -548,7 +553,7 @@ gantt
 - **Completed locally:**
   - Next.js, TypeScript, Tailwind CSS, ESLint, Vitest, and Playwright dependencies configured.
   - Responsive PWA shell and manifest created, with a minimal production service worker.
-  - Custom ComeBack return-arc and cricket-ball brand mark is used across onboarding, player, clinician, PWA icon, and browser favicon surfaces.
+  - Custom ComeBack return-arc and cricket-ball brand mark is used across authentication, player, clinician, PWA icon, and browser favicon surfaces.
   - Player dashboard, 6 Rs roadmap, camera setup, real on-device pose-test screen, symptom check-in, result, and clinician-review gate implemented.
   - Safety and privacy messaging included. The prototype never presents a medical-clearance decision.
   - Team ownership documented in `docs/TEAM_TASKS.md`.
@@ -562,20 +567,23 @@ gantt
   - MediaPipe PoseLandmarker runs in a Web Worker from locally hosted model and WebAssembly assets. Raw camera frames are not persisted or uploaded.
   - Single-leg squat, balance, hop, and bridge modes include landmark smoothing, framing quality, counting or timing, and descriptive movement metrics.
   - Camera metric unit tests and mobile journey tests pass. The required mid-range Android and manual-recording validation remains pending in `docs/CAMERA_VALIDATION.md`.
-  - Consent onboarding, personalised cited roadmap, complete symptom check-in, profile, support, and result flows persist in IndexedDB.
+  - Separate player and clinician email/password authentication uses bcrypt password hashes, signed 12-hour sessions, and role-specific browser storage. The portals do not link into each other.
+  - Player registration captures consent and requires selection of a verified clinician. Clinician activation requires matching email and registration number from the fictional verified ICC directory.
+  - Consent registration, personalised cited roadmap, complete symptom check-in, profile, support, and result flows persist in IndexedDB for offline player access.
   - The visited player journey reloads offline through a runtime-caching service worker.
-  - The clinician dashboard reads linked local demo data, highlights symptoms, prevents unsafe approval, records approve or hold decisions, and updates the player stage across tabs.
-  - Render Blueprint provisions an Express API and PostgreSQL. Signed expiring demo sessions, role checks, metrics-only records, one-stage decisions, symptom approval blocking, and an optional signed red-flag webhook are implemented. The schema has no video field.
-  - API integration tests cover player profile and check-in sync, the clinician queue, approval-driven stage advancement, player refresh, and symptom-based approval blocking.
-  - Automated mobile E2E covers onboarding, offline reload, symptom-free approval, cross-tab stage advancement, symptom hold, and approval prevention.
+  - The clinician dashboard reads only linked players, highlights symptoms, prevents unsafe approval, records approve or hold decisions, and updates the player stage through the API.
+  - Linked players and clinicians can exchange private in-app messages. Message and decision events create persistent, readable notifications for the recipient.
+  - Render Blueprint provisions an Express API and PostgreSQL. Account auth, role and linkage checks, metrics-only check-ins, one-stage decisions, symptom approval blocking, chat, notifications, optional Groq explanations, and an optional signed red-flag webhook are implemented. The schema has no video field.
+  - API integration tests cover authentication and role isolation, player profile and check-in sync, clinician linkage, chat, notifications, approval-driven stage advancement, player refresh, and symptom-based approval blocking.
+  - Fourteen mobile and desktop E2E journeys cover registration, authentication, offline reload, symptom-free approval, stage advancement, symptom hold, approval prevention, chat, notifications, logout, Bengali guardrails, and accessibility.
   - Grounded explanation API uses a deterministic no-key fallback or Groq strict structured output, validates citations and stage invariance, and refuses clearance questions before any model call.
   - Core UI supports English, Bengali, Hindi, and Urdu with RTL direction for Urdu. Bengali is covered through the complete player flow in E2E.
-  - Accessibility automation passes on mobile and desktop for onboarding, player, and clinician entry screens. Privacy, consent, fictional demo data, file-size enforcement, keyboard focus, and visible prototype accuracy limits are included.
+  - Accessibility automation passes on mobile and desktop for authentication, player, and clinician entry screens. Privacy, consent, fictional demo data, file-size enforcement, keyboard focus, and visible prototype accuracy limits are included.
   - Tier 7 pitch deck and five-slide solution overview are exported as submission-ready PDFs. A timed 2 minute 45 second recording script and safety checklist are included in `docs/submission`.
 - **Research correction:** The official ICC document provides stage windows and general guidance but does not define camera-test pass thresholds or a complete automated clearance algorithm. Readiness tests and thresholds must be attributed to separate primary clinical sources and must not be presented as ICC criteria.
 - **Research correction:** Goom et al. 2019 classifies its postnatal load-impact and strength screening recommendations as Level 4 expert consensus. It is not a prescriptive protocol. Strength weakness directs rehabilitation but is not independently a barrier to return. Camera metrics remain observations for clinician review.
 - **Repository status:** Public repository at `https://github.com/nourinzaman2005-droid/comeback`. The local `main` branch tracks `origin/main`; CI and GitHub Pages deployment run on pushes.
-- **Next task:** Create the Render Blueprint, verify remote sync on separate devices, perform the physical Android/count validation, optionally verify the Groq-key path, and complete the Tier 7 deck, overview, demo video, and submission.
+- **Next task:** Create the Render Blueprint, add the Groq key in Render, verify the authenticated remote flow on separate devices, perform the physical Android/count validation, record the demo video, and submit.
 - **Decisions log:**
   - 24 Sep 2026: Problem statement 3 chosen. ComeBack idea locked after two research rounds (11 ideas evaluated).
   - 24 Sep 2026: Initial stack decided. LLM never decides progression.
@@ -595,3 +603,5 @@ gantt
   - 25 Sep 2026: Tier 6 completed locally. Mobile and desktop E2E, automated accessibility checks, privacy and consent, fictional personas, offline behavior, and submission file-size checks pass.
   - 25 Sep 2026: The user replaced Vercel/Supabase with GitHub Pages plus Render/PostgreSQL. The repository was made public for Pages, a static-export workflow was added, and Ashra authored the Render API migration commit.
   - 25 Sep 2026: A minimal plum return-arc and rose cricket-ball logo replaced generic letter and stethoscope brand marks across the product and favicon.
+  - 25 Sep 2026: Player and clinician portals were separated with email/password authentication, verified-clinician linkage, chat, notifications, profile logout, camera framing improvements, and expanded mobile/desktop E2E coverage.
+  - 25 Sep 2026: Obsolete Vercel, Supabase, legacy demo-app, and legacy onboarding files were removed. Offline retries now target the Render API.

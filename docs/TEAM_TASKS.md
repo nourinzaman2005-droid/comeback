@@ -4,7 +4,7 @@ This split keeps both contributors working in parallel while preserving a single
 
 ## Nourin Zaman (`nourinzaman2005-droid`)
 
-- Own the player experience: onboarding, 6 Rs roadmap, readiness-test screens, symptom check-in, and result view.
+- Own the player experience: authentication and registration, 6 Rs roadmap, readiness-test screens, symptom check-in, and result view.
 - Own visual consistency, mobile responsiveness, accessibility, and the two-minute demo narrative.
 - Integrate Bengali UI copy after the English flow is stable.
 - Maintain the frontend component tests and demo seed persona.

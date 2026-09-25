@@ -2,35 +2,32 @@
 
 import {
   AlertTriangle,
-  ArrowLeft,
   Check,
   ClipboardCheck,
   Clock3,
+  LogOut,
   ShieldCheck,
   UserRound,
 } from "lucide-react";
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BrandLogo } from "@/components/brand-logo";
+import { CareChat, NotificationBell } from "@/components/care-comms";
+import { pullRemotePlayers, pushRemoteDecision } from "@/lib/data/render-api";
 import {
-  getAllValues,
-  putValue,
-  saveWithQueue,
-  subscribeToData,
-} from "@/lib/data/indexed-db";
-import {
-  API_URL,
-  pullRemotePlayers,
-  pushRemoteDecision,
-} from "@/lib/data/render-api";
-import {
-  ClinicianDecision,
+  type AuthSession,
+  type ClinicianDecision,
   nextStage,
-  PlayerProfile,
-  TestRecord,
+  type PlayerProfile,
+  type TestRecord,
 } from "@/lib/data/types";
 
-export function ClinicianDashboard() {
+export function ClinicianDashboard({
+  session,
+  onLogout,
+}: {
+  session: AuthSession;
+  onLogout: () => void;
+}) {
   const [profiles, setProfiles] = useState<PlayerProfile[]>([]);
   const [tests, setTests] = useState<TestRecord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -38,65 +35,56 @@ export function ClinicianDashboard() {
   const [message, setMessage] = useState("");
 
   const load = useCallback(async () => {
-    const nextProfiles = await getAllValues<PlayerProfile>("profiles");
-    const nextTests = await getAllValues<TestRecord>("tests");
-    setProfiles(nextProfiles);
-    setTests(
-      nextTests.sort((a, b) => b.completedAt.localeCompare(a.completedAt)),
-    );
-    setSelectedId((current) => current ?? nextProfiles[0]?.id ?? null);
-    if (API_URL) {
-      const remote = await pullRemotePlayers().catch(() => null);
-      if (remote?.length) {
-        const remoteProfiles = remote.map((item) => ({
-          id: String(item.id),
-          name: String(item.display_name ?? "Player"),
-          deliveryDate: String(item.delivery_date),
-          deliveryType: String(
-            item.delivery_type,
-          ) as PlayerProfile["deliveryType"],
-          role: String(item.cricket_role) as PlayerProfile["role"],
-          language: String(item.language) as PlayerProfile["language"],
-          consentAt: String(item.consent_at),
-          clinicianId: "render-clinician-demo",
-          clinicianName: "Dr. Maya Rahman",
-          stage: String(item.stage) as PlayerProfile["stage"],
-          stageStatus: String(
-            item.stage_status,
-          ) as PlayerProfile["stageStatus"],
-          updatedAt: String(item.updated_at),
-        }));
-        const remoteTests = remote.flatMap((item) =>
-          ((item.tests as Array<Record<string, unknown>>) ?? []).map(
-            (test) => ({
-              id: String(test.id),
-              playerId: String(test.player_id),
-              kind: String(test.kind) as TestRecord["kind"],
-              side: String(test.side) as TestRecord["side"],
-              metrics: test.metrics as TestRecord["metrics"],
-              symptoms: (test.symptoms as string[]) ?? [],
-              completedAt: String(test.completed_at),
-              syncStatus: "synced" as const,
-            }),
-          ),
-        );
-        setProfiles(remoteProfiles);
-        setTests(
-          remoteTests.sort((a, b) =>
-            b.completedAt.localeCompare(a.completedAt),
-          ),
-        );
-        setSelectedId((current) => current ?? remoteProfiles[0]?.id ?? null);
-      }
+    const remote = await pullRemotePlayers().catch(() => null);
+    if (remote) {
+      const remoteProfiles = remote.map((item) => ({
+        id: String(item.id),
+        name: String(item.display_name ?? item.name ?? "Player"),
+        deliveryDate: String(item.delivery_date ?? item.deliveryDate),
+        deliveryType: String(
+          item.delivery_type ?? item.deliveryType,
+        ) as PlayerProfile["deliveryType"],
+        role: String(item.cricket_role ?? item.role) as PlayerProfile["role"],
+        language: String(item.language) as PlayerProfile["language"],
+        consentAt: String(item.consent_at ?? item.consentAt),
+        clinicianId: session.user.id,
+        clinicianName: session.user.name,
+        stage: String(item.stage) as PlayerProfile["stage"],
+        stageStatus: String(
+          item.stage_status ?? item.stageStatus,
+        ) as PlayerProfile["stageStatus"],
+        updatedAt: String(item.updated_at ?? item.updatedAt),
+      }));
+      const remoteTests = remote.flatMap((item) =>
+        ((item.tests as Array<Record<string, unknown>>) ?? []).map((test) => ({
+          id: String(test.id),
+          playerId: String(test.player_id ?? test.playerId),
+          kind: String(test.kind) as TestRecord["kind"],
+          side: String(test.side) as TestRecord["side"],
+          metrics: test.metrics as TestRecord["metrics"],
+          symptoms: (test.symptoms as string[]) ?? [],
+          completedAt: String(test.completed_at ?? test.completedAt),
+          syncStatus: "synced" as const,
+        })),
+      );
+      setProfiles(remoteProfiles);
+      setTests(
+        remoteTests.sort((a, b) => b.completedAt.localeCompare(a.completedAt)),
+      );
+      setSelectedId((current) =>
+        remoteProfiles.some((profile) => profile.id === current)
+          ? current
+          : (remoteProfiles[0]?.id ?? null),
+      );
     }
-  }, []);
+  }, [session.user.id, session.user.name]);
 
   useEffect(() => {
     const initialLoad = window.setTimeout(() => void load(), 0);
-    const unsubscribe = subscribeToData(() => void load());
+    const timer = window.setInterval(() => void load(), 5_000);
     return () => {
       window.clearTimeout(initialLoad);
-      unsubscribe();
+      window.clearInterval(timer);
     };
   }, [load]);
 
@@ -124,21 +112,23 @@ export function ClinicianDashboard() {
       createdAt,
       syncStatus: "local-demo",
     };
-    await saveWithQueue("decision", "decisions", record);
-    await pushRemoteDecision(record).catch(() => null);
-    await putValue("profiles", {
-      ...profile,
-      stage: toStage,
-      stageStatus: decision === "approve" ? "active" : "held",
-      updatedAt: createdAt,
-    });
-    setMessage(
-      decision === "approve"
-        ? `${profile.name} is now in ${toStage}. The player view has been updated.`
-        : `${profile.name}'s ${profile.stage} stage remains on hold.`,
-    );
-    setNote("");
-    await load();
+    setMessage("Saving decision...");
+    try {
+      const result = await pushRemoteDecision(record);
+      setMessage(
+        decision === "approve"
+          ? `${profile.name} is now in ${result.stage}. The player has been notified.`
+          : `${profile.name}'s ${profile.stage} stage remains on hold.`,
+      );
+      setNote("");
+      await load();
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "The decision could not be saved. Please retry.",
+      );
+    }
   }
 
   return (
@@ -149,12 +139,20 @@ export function ClinicianDashboard() {
           <BrandLogo className="clinician-logo" />
           <p>
             <strong>ComeBack Clinical</strong>
-            <span>Demo workspace</span>
+            <span>{session.user.name}</span>
           </p>
         </div>
-        <Link href="/">
-          <ArrowLeft size={17} /> Player view
-        </Link>
+        <div className="clinician-actions">
+          <NotificationBell role="clinician" />
+          <button className="clinician-account" onClick={onLogout}>
+            <span>{session.user.name.slice(0, 2).toUpperCase()}</span>
+            <span>
+              <strong>{session.user.name}</strong>
+              <small>Sign out</small>
+            </span>
+            <LogOut size={16} />
+          </button>
+        </div>
       </header>
       <div className="clinician-layout">
         <aside className="player-list">
@@ -164,8 +162,10 @@ export function ClinicianDashboard() {
           {profiles.length === 0 && (
             <div className="empty-clinician">
               <UserRound size={26} />
-              <strong>No local player yet</strong>
-              <span>Open player view and choose the demo.</span>
+              <strong>No linked players yet</strong>
+              <span>
+                Players who select you during registration will appear here.
+              </span>
             </div>
           )}
           {profiles.map((item) => {
@@ -174,6 +174,7 @@ export function ClinicianDashboard() {
             return (
               <button
                 className={selectedId === item.id ? "selected" : ""}
+                data-player-id={item.id}
                 key={item.id}
                 onClick={() => setSelectedId(item.id)}
               >
@@ -201,7 +202,7 @@ export function ClinicianDashboard() {
             <div className="clinical-empty">
               <ClipboardCheck size={38} />
               <h2>Choose a player to review</h2>
-              <p>The local demo keeps clinical decisions on this device.</p>
+              <p>Select a linked player when one becomes available.</p>
             </div>
           ) : (
             <>
@@ -346,6 +347,12 @@ export function ClinicianDashboard() {
                   )}
                 </div>
               </section>
+
+              <CareChat
+                role="clinician"
+                playerId={profile.id}
+                title={profile.name}
+              />
 
               <section className="decision-card">
                 <div>

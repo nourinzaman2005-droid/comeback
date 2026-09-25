@@ -22,13 +22,13 @@ The Groq path follows the official Chat Completions endpoint and uses `openai/gp
 
 ## Languages
 
-The player can switch among English, Bengali, Hindi, and Urdu from the header. Urdu sets the document direction to RTL. Core onboarding, home, camera journey, symptom, result, navigation, and AI boundary strings use the selected language. Source citations and clinical source titles remain unchanged to avoid mistranslating evidence.
+The player can switch among English, Bengali, Hindi, and Urdu from the header. Urdu sets the document direction to RTL. Core registration, home, camera journey, symptom, result, navigation, and AI boundary strings use the selected language. Source citations and clinical source titles remain unchanged to avoid mistranslating evidence.
 
 Automated E2E completes the core player flow in Bengali and confirms a Bengali clearance question receives a Bengali refusal.
 
 ## Hardening
 
-- Automated axe checks pass on the onboarding, player, and clinician entry screens.
+- Automated axe checks pass on the authentication, player, and clinician entry screens.
 - Every E2E journey runs at Pixel 7 and desktop Chrome sizes.
 - Keyboard focus, skip navigation, semantic headings, reduced motion, and responsive layout are included.
 - The privacy page describes local camera processing, optional metrics-only sync, erasure, and the MediaPipe runtime metrics notice.

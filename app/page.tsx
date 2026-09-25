@@ -1,5 +1,5 @@
-import { PlayerApp } from "@/components/player-app";
+import { AuthPortal } from "@/components/auth-portal";
 
 export default function Home() {
-  return <PlayerApp />;
+  return <AuthPortal role="player" />;
 }

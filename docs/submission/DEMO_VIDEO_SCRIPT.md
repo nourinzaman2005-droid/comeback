@@ -14,7 +14,7 @@ On-screen source: ICC launch release, 22 June 2026.
 
 ## 0:20-0:42 - Personal roadmap
 
-Visual: Open the live GitHub Pages app. Choose "Try the 2-minute demo." Show the Today screen and open the 6 Rs roadmap.
+Visual: Open the live GitHub Pages app. Choose "Try the 2-minute player demo." Show the Today screen and open the 6 Rs roadmap.
 
 Narration:
 

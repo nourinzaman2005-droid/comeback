@@ -3,7 +3,6 @@
 import {
   ArrowLeft,
   ArrowRight,
-  Bell,
   Camera,
   Check,
   ChevronRight,
@@ -12,6 +11,7 @@ import {
   HeartHandshake,
   Home,
   LockKeyhole,
+  LogOut,
   MessageCircleMore,
   Pause,
   ShieldCheck,
@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BrandLogo } from "@/components/brand-logo";
+import { CareChat, NotificationBell } from "@/components/care-comms";
 import guideline from "@/content/guidelines/icc-2026.json";
 import testGuideline from "@/content/guidelines/tests.json";
 import {
@@ -31,9 +32,9 @@ import {
   type StageExplanation,
 } from "@/lib/ai/explanation";
 import {
+  clearLocalData,
   getAllValues,
   getValue,
-  clearLocalData,
   putValue,
   saveWithQueue,
   subscribeToData,
@@ -41,19 +42,18 @@ import {
 import { flushSyncQueue, SyncSummary } from "@/lib/data/sync";
 import {
   API_URL,
+  explainStage,
+  getRemoteProfile,
   pullRemoteProfile,
-  pushRemoteProfile,
-  pushRemoteTest,
 } from "@/lib/data/render-api";
 import {
-  DEMO_PROFILE,
-  PlayerProfile,
+  type AuthSession,
+  type PlayerProfile,
   STAGES,
-  TestRecord,
+  type TestRecord,
 } from "@/lib/data/types";
 import type { CameraMetrics, TestKind } from "@/lib/pose/types";
 import { UI_COPY, type UiKey } from "@/lib/i18n/ui";
-import { Onboarding } from "./onboarding";
 import { PoseCamera } from "./pose-camera";
 import { ServiceWorkerRegister } from "./service-worker-register";
 
@@ -169,12 +169,7 @@ function Shell({
                 <option value="ur">اردو</option>
               </select>
             </label>
-            <Link className="clinician-link" href="/clinician">
-              <Stethoscope size={16} /> {t.clinicianView}
-            </Link>
-            <button className="icon-button" aria-label="Notifications">
-              <Bell size={20} />
-            </button>
+            <NotificationBell role="player" />
             <button
               className="avatar"
               onClick={() => setPage("profile")}
@@ -222,7 +217,13 @@ function Shell({
   );
 }
 
-export function PlayerApp() {
+export function PlayerApp({
+  session,
+  onLogout,
+}: {
+  session: AuthSession;
+  onLogout: () => void;
+}) {
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [page, setPage] = useState<Page>("home");
@@ -232,18 +233,24 @@ export function PlayerApp() {
   const [latest, setLatest] = useState<TestRecord | null>(null);
   const [online, setOnline] = useState(true);
   const [sync, setSync] = useState<SyncSummary>({
-    mode: "local-demo",
+    mode: "render",
     synced: 0,
     pending: 0,
   });
 
   const load = useCallback(async () => {
-    const stored = await getValue<PlayerProfile>("profiles", DEMO_PROFILE.id);
-    const profiles = stored
-      ? [stored]
-      : await getAllValues<PlayerProfile>("profiles");
-    const nextProfile = profiles[0] ?? null;
-    setProfile(nextProfile);
+    let nextProfile = await getValue<PlayerProfile>(
+      "profiles",
+      session.user.id,
+    );
+    try {
+      const remote = await getRemoteProfile(session.user.id);
+      nextProfile = remote;
+      await putValue("profiles", remote);
+    } catch {
+      // A previously synced profile keeps the player journey available offline.
+    }
+    setProfile(nextProfile ?? null);
     if (nextProfile) {
       const records = await getAllValues<TestRecord>("tests");
       setLatest(
@@ -254,14 +261,18 @@ export function PlayerApp() {
       );
     }
     setLoaded(true);
-  }, []);
+  }, [session.user.id]);
 
   useEffect(() => {
     const initialLoad = window.setTimeout(() => {
       void load();
       setOnline(navigator.onLine);
+      if (navigator.onLine) void flushSyncQueue().then(setSync);
     }, 0);
-    const updateNetwork = () => setOnline(navigator.onLine);
+    const updateNetwork = () => {
+      setOnline(navigator.onLine);
+      if (navigator.onLine) void flushSyncQueue().then(setSync);
+    };
     window.addEventListener("online", updateNetwork);
     window.addEventListener("offline", updateNetwork);
     const unsubscribe = subscribeToData(() => void load());
@@ -295,14 +306,6 @@ export function PlayerApp() {
     return () => window.clearInterval(poll);
   }, [profile]);
 
-  const saveProfile = async (next: PlayerProfile) => {
-    await saveWithQueue("profile", "profiles", next);
-    await pushRemoteProfile(next).catch(() => false);
-    setProfile(next);
-    setPage("home");
-    setSync(await flushSyncQueue());
-  };
-
   const captureMetrics = useCallback((kind: TestKind, next: CameraMetrics) => {
     setTestKind(kind);
     setMetrics(next);
@@ -328,7 +331,6 @@ export function PlayerApp() {
       syncStatus: "local-demo",
     };
     await saveWithQueue("test", "tests", record);
-    await pushRemoteTest(record).catch(() => false);
     const nextProfile = {
       ...profile,
       stageStatus: symptoms.length
@@ -350,13 +352,36 @@ export function PlayerApp() {
         <strong>Opening your private journey</strong>
       </main>
     );
-  if (!profile) return <Onboarding onComplete={saveProfile} />;
+  if (!profile)
+    return (
+      <main className="auth-shell auth-player">
+        <section className="auth-form-panel">
+          <div className="auth-form-card auth-recovery">
+            <BrandLogo className="auth-loading-logo" />
+            <h1>Your profile could not load</h1>
+            <p>
+              Reconnect to the internet and retry. Your account is still
+              protected.
+            </p>
+            <button
+              className="primary-button"
+              onClick={() => location.reload()}
+            >
+              Retry
+            </button>
+            <button className="text-button" onClick={onLogout}>
+              Sign out
+            </button>
+          </div>
+        </section>
+      </main>
+    );
 
   const t = UI_COPY[profile.language];
   const changeLanguage = async (language: Language) => {
     const next = { ...profile, language, updatedAt: new Date().toISOString() };
     await saveWithQueue("profile", "profiles", next);
-    await pushRemoteProfile(next).catch(() => false);
+    setSync(await flushSyncQueue());
     setProfile(next);
   };
 
@@ -374,6 +399,7 @@ export function PlayerApp() {
           online={online}
           sync={sync}
           onStart={() => setPage("setup")}
+          onMessage={() => setPage("support")}
         />
       )}
       {page === "journey" && <Journey profile={profile} />}
@@ -413,9 +439,11 @@ export function PlayerApp() {
       {page === "profile" && (
         <Profile
           profile={profile}
+          email={session.user.email}
+          onLogout={onLogout}
           onReset={async () => {
             await clearLocalData();
-            location.reload();
+            onLogout();
           }}
         />
       )}
@@ -429,12 +457,14 @@ function Today({
   online,
   sync,
   onStart,
+  onMessage,
 }: {
   profile: PlayerProfile;
   latest: TestRecord | null;
   online: boolean;
   sync: SyncSummary;
   onStart: () => void;
+  onMessage: () => void;
 }) {
   const stageIndex = STAGES.indexOf(profile.stage);
   const t = UI_COPY[profile.language];
@@ -450,16 +480,13 @@ function Today({
         );
         return;
       }
-      const response = await fetch(`${API_URL}/api/explain`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          stage: profile.stage,
-          language: profile.language,
-          question,
-        }),
-      });
-      if (response.ok) setExplanation(await response.json());
+      setExplanation(
+        await explainStage(profile.stage, profile.language, question),
+      );
+    } catch {
+      setExplanation(
+        groundedFallback(profile.stage, profile.language, question),
+      );
     } finally {
       setExplaining(false);
     }
@@ -472,8 +499,8 @@ function Today({
           {online ? "Online" : "Offline ready"}
         </span>
         <span>
-          {sync.mode === "local-demo"
-            ? "Private demo storage"
+          {sync.mode === "render"
+            ? "Securely synced"
             : `${sync.pending} awaiting sync`}
         </span>
       </div>
@@ -597,9 +624,9 @@ function Today({
             <i /> Connected for demo review
           </span>
         </div>
-        <Link href="/clinician" aria-label="Open clinician dashboard">
+        <button onClick={onMessage} aria-label="Message linked clinician">
           <ChevronRight size={20} />
-        </Link>
+        </button>
       </section>
       <p className="medical-note">
         <ShieldCheck size={16} /> ComeBack supports your care team. It does not
@@ -896,9 +923,6 @@ function Result({
         </div>
         <ChevronRight size={20} />
       </div>
-      <Link className="primary-button link-button" href="/clinician">
-        Open clinician demo <ArrowRight size={18} />
-      </Link>
       <button className="text-button" onClick={onHome}>
         {t.backToday}
       </button>
@@ -930,7 +954,7 @@ function Support({ profile }: { profile: PlayerProfile }) {
             <small>Linked clinician</small>
             <strong>{profile.clinicianName}</strong>
           </p>
-          <span>Demo connection</span>
+          <span>ICC verified</span>
         </div>
         <div>
           <span>
@@ -943,12 +967,11 @@ function Support({ profile }: { profile: PlayerProfile }) {
           <span>No automated diagnosis</span>
         </div>
       </div>
-      <a
-        className="primary-button link-button"
-        href="mailto:demo-clinician@example.com?subject=ComeBack check-in"
-      >
-        Message clinician <MessageCircleMore size={18} />
-      </a>
+      <CareChat
+        role="player"
+        playerId={profile.id}
+        title={profile.clinicianName}
+      />
       <p className="evidence-note">
         For urgent or severe symptoms, use appropriate local emergency care
         rather than this app.
@@ -959,9 +982,13 @@ function Support({ profile }: { profile: PlayerProfile }) {
 
 function Profile({
   profile,
+  email,
+  onLogout,
   onReset,
 }: {
   profile: PlayerProfile;
+  email: string;
+  onLogout: () => void;
   onReset: () => void;
 }) {
   return (
@@ -977,6 +1004,10 @@ function Profile({
         <h3>{profile.name}</h3>
         <span>{profile.role.replace("-", " ")}</span>
         <dl>
+          <div>
+            <dt>Email</dt>
+            <dd>{email}</dd>
+          </div>
           <div>
             <dt>Delivery date</dt>
             <dd>
@@ -1010,6 +1041,9 @@ function Profile({
           <Link href="/privacy">Read privacy and consent details</Link>
         </div>
       </div>
+      <button className="profile-logout" onClick={onLogout}>
+        <LogOut size={18} /> Sign out
+      </button>
       <button className="danger-text-button" onClick={onReset}>
         Erase local demo data
       </button>
