@@ -1,13 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Fraunces } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-const bodyFont = DM_Sans({ subsets: ["latin"], variable: "--font-body" });
-const displayFont = Fraunces({
+const bodyFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-body",
 });
 
 export const metadata: Metadata = {
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#5c2352",
+  themeColor: "#5b3fd9",
   width: "device-width",
   initialScale: 1,
 };
@@ -32,9 +31,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${bodyFont.variable} ${displayFont.variable}`}>
-        {children}
-      </body>
+      <body className={`${bodyFont.variable}`}>{children}</body>
     </html>
   );
 }

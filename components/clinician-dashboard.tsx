@@ -264,13 +264,13 @@ export function ClinicianDashboard({
                 <div>
                   <h2>{profile.name}</h2>
                   <div className="heading-chips">
-                    <span className="chip chip-petal">
+                    <span className="chip chip-accent">
                       Stage: {profile.stage}
                     </span>
-                    <span className="chip chip-quiet capitalize">
+                    <span className="chip chip-neutral capitalize">
                       {profile.role.replace("-", " ")}
                     </span>
-                    <span className="chip chip-quiet">
+                    <span className="chip chip-neutral">
                       {weeksSince(profile.deliveryDate)} weeks since birth
                     </span>
                   </div>

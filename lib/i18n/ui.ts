@@ -46,7 +46,10 @@ export type UiKey =
   | "stepOf"
   | "online"
   | "offlineReady"
-  | "synced";
+  | "synced"
+  | "checkInsSaved"
+  | "iccStages"
+  | "start";
 
 const en: Record<UiKey, string> = {
   today: "Today",
@@ -96,6 +99,9 @@ const en: Record<UiKey, string> = {
   online: "Online",
   offlineReady: "Offline ready",
   synced: "Securely synced",
+  checkInsSaved: "Check-ins saved",
+  iccStages: "ICC stages",
+  start: "Start",
 };
 
 const bn: Record<UiKey, string> = {
@@ -147,6 +153,9 @@ const bn: Record<UiKey, string> = {
   online: "অনলাইন",
   offlineReady: "অফলাইনে প্রস্তুত",
   synced: "নিরাপদে সিঙ্ক হয়েছে",
+  checkInsSaved: "সংরক্ষিত চেক-ইন",
+  iccStages: "ICC ধাপ",
+  start: "শুরু করুন",
 };
 
 const hi: Record<UiKey, string> = {
@@ -196,6 +205,9 @@ const hi: Record<UiKey, string> = {
   online: "ऑनलाइन",
   offlineReady: "ऑफ़लाइन तैयार",
   synced: "सुरक्षित रूप से सिंक",
+  checkInsSaved: "सहेजे गए चेक-इन",
+  iccStages: "ICC चरण",
+  start: "शुरू करें",
 };
 
 const ur: Record<UiKey, string> = {
@@ -245,6 +257,9 @@ const ur: Record<UiKey, string> = {
   online: "آن لائن",
   offlineReady: "آف لائن تیار",
   synced: "محفوظ طریقے سے ہم آہنگ",
+  checkInsSaved: "محفوظ چیک اِن",
+  iccStages: "ICC مراحل",
+  start: "شروع کریں",
 };
 
 export const UI_COPY: Record<Language, Record<UiKey, string>> = {

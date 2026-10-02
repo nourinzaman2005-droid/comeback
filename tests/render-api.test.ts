@@ -168,6 +168,11 @@ describe("Render API authenticated end-to-end workflow", () => {
       ]),
     );
 
+    const beforeDecision = (await (
+      await fetch(`${api}/api/players/${playerId}`, authorized(player.token))
+    ).json()) as { updatedAt: string };
+    await new Promise((resolve) => setTimeout(resolve, 5));
+
     const decision = await fetch(`${api}/api/decisions`, {
       method: "POST",
       ...authorized(clinician.token, {
@@ -187,10 +192,13 @@ describe("Render API authenticated end-to-end workflow", () => {
       `${api}/api/players/${playerId}`,
       authorized(player.token),
     );
-    expect(await refreshed.json()).toMatchObject({
+    const refreshedProfile = await refreshed.json();
+    expect(refreshedProfile).toMatchObject({
       stage: "Recondition",
       stageStatus: "active",
     });
+    // A decision must change the timestamp the player app watches.
+    expect(refreshedProfile.updatedAt).not.toBe(beforeDecision.updatedAt);
     const playerNotifications = await fetch(
       `${api}/api/notifications`,
       authorized(player.token),

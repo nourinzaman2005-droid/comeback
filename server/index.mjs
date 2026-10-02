@@ -897,6 +897,7 @@ app.post(
         ...player,
         stage: next,
         stageStatus: d.decision === "approve" ? "active" : "held",
+        updatedAt: new Date().toISOString(),
       });
     }
     await createNotification(

@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, CameraOff, LockKeyhole, RotateCcw } from "lucide-react";
+import { CameraOff, LockKeyhole, RotateCcw } from "lucide-react";
 import {
   type ReactNode,
   useCallback,
@@ -15,6 +15,7 @@ import {
   SessionState,
 } from "@/lib/pose/metrics";
 import { CameraMetrics, Landmark, POSE, TestKind } from "@/lib/pose/types";
+import { TEST_ICONS } from "./icons";
 
 const TESTS: { id: TestKind; label: string; target: string }[] = [
   { id: "squat", label: "Single-leg squat", target: "10 reps, front view" },
@@ -261,7 +262,12 @@ export function PoseCamera({
           </div>
           {status === "idle" && (
             <div className="camera-empty">
-              <Camera size={34} />
+              <span className="camera-empty-icon">
+                {(() => {
+                  const Icon = TEST_ICONS[kind];
+                  return <Icon size={40} strokeWidth={1.6} />;
+                })()}
+              </span>
               <strong>{selected.label}</strong>
               <span>
                 Place the phone 2 to 3 metres away so your full body fits.
@@ -310,6 +316,12 @@ export function PoseCamera({
               onClick={() => selectTest(test.id)}
               type="button"
             >
+              <span className="test-icon">
+                {(() => {
+                  const Icon = TEST_ICONS[test.id];
+                  return <Icon size={24} />;
+                })()}
+              </span>
               <strong>{test.label}</strong>
               <span>{test.target}</span>
             </button>

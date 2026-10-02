@@ -12,6 +12,8 @@ import {
   Stethoscope,
 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
+import { SeamMotif } from "./icons";
+import { ReturnRing } from "./motion";
 import { BrandLogo } from "./brand-logo";
 import { ClinicianDashboard } from "./clinician-dashboard";
 import { PlayerApp } from "./player-app";
@@ -215,6 +217,47 @@ function AuthScreen({
               ? "Follow the ICC's six-stage return to play with your own clinician, camera check-ins that stay on your phone, and every conversation in one calm place."
               : "Review linked players, respond to symptoms, message securely, and control every stage decision."}
           </p>
+        </div>
+        <SeamMotif className="auth-seam" />
+        <div className="auth-preview" aria-hidden="true">
+          <div className="preview-card">
+            <div className="preview-ring">
+              <ReturnRing current={isPlayer ? 2 : 3} size={112} label="" />
+              <span>
+                <strong>{isPlayer ? 3 : 4}</strong>
+                <small>/ 6</small>
+              </span>
+            </div>
+            <div className="preview-copy">
+              <small>{isPlayer ? "Current stage" : "Player review"}</small>
+              <strong>{isPlayer ? "Restore" : "Recondition"}</strong>
+              <span>
+                {isPlayer
+                  ? "Awaiting clinician review"
+                  : "No symptoms reported"}
+              </span>
+            </div>
+          </div>
+          <div className="preview-float preview-one">
+            <span className="preview-dot tone-success">
+              <BadgeCheck size={16} />
+            </span>
+            <p>
+              <strong>Check-in saved</strong>
+              <small>Single-leg balance, 10.0s hold</small>
+            </p>
+          </div>
+          <div className="preview-float preview-two">
+            <span className="preview-dot tone-primary">
+              <Stethoscope size={16} />
+            </span>
+            <p>
+              <strong>{isPlayer ? "Dr. Maya Rahman" : "Stage approved"}</strong>
+              <small>
+                {isPlayer ? "Approved your move to Restore" : "Player notified"}
+              </small>
+            </p>
+          </div>
         </div>
         <div className="auth-trust">
           <span>

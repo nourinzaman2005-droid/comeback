@@ -3,10 +3,14 @@
 import {
   ArrowLeft,
   ArrowRight,
+  Baby,
+  CalendarDays,
   Camera,
   Check,
   ChevronRight,
   CircleUserRound,
+  ClipboardCheck,
+  Clock3,
   CloudOff,
   HeartHandshake,
   Home,
@@ -14,16 +18,19 @@ import {
   LogOut,
   MessageCircleMore,
   Pause,
+  Route,
   ShieldCheck,
   Sparkles,
   Stethoscope,
-  Target,
   Wifi,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import { BrandLogo } from "@/components/brand-logo";
 import { CareChat, NotificationBell } from "@/components/care-comms";
+import { PlacementDiagram, SeamMotif, TEST_ICONS } from "@/components/icons";
+import { CountUp, ReturnRing } from "@/components/motion";
 import guideline from "@/content/guidelines/icc-2026.json";
 import testGuideline from "@/content/guidelines/tests.json";
 import {
@@ -96,9 +103,34 @@ const CRICKET_FOCUS: Record<PlayerProfile["role"], string> = {
     "Reintroduce crouching, diving and repeated squats gradually, guided by your care team.",
 };
 
+const PROGRESSION_RULES = [
+  "Minimum time for the stage has passed",
+  "Required check-ins are complete",
+  "No red-flag symptoms in the window",
+  "Your linked clinician approves",
+];
+
 function weeksSince(date: string) {
   const elapsed = Date.now() - new Date(`${date}T00:00:00`).getTime();
   return Math.max(0, Math.floor(elapsed / (7 * 24 * 60 * 60 * 1000)));
+}
+
+function todayLabel(language: Language) {
+  const locale = { en: "en-GB", bn: "bn-BD", hi: "hi-IN", ur: "ur-PK" }[
+    language
+  ];
+  return new Date().toLocaleDateString(locale, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
+function shortDate(value: string) {
+  return new Date(value).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+  });
 }
 
 function initials(name: string) {
@@ -107,7 +139,7 @@ function initials(name: string) {
 
 const NAV_ITEMS: { page: Page; key: UiKey; icon: typeof Home }[] = [
   { page: "home", key: "today", icon: Home },
-  { page: "journey", key: "journey", icon: Target },
+  { page: "journey", key: "journey", icon: Route },
   { page: "support", key: "support", icon: MessageCircleMore },
   { page: "profile", key: "profile", icon: CircleUserRound },
 ];
@@ -128,6 +160,7 @@ function Shell({
   const t = UI_COPY[profile.language];
   const inFlow = FLOW_PAGES.includes(page);
   const activeNav = inFlow ? "home" : page;
+  const activeIndex = NAV_ITEMS.findIndex((item) => item.page === activeNav);
   return (
     <div
       className={`app-shell ${inFlow ? "in-flow" : ""}`}
@@ -175,7 +208,11 @@ function Shell({
           <BrandLogo className="brand-mark" />
           <span>ComeBack</span>
         </button>
-        <div className="nav-items">
+        <div
+          className="nav-items"
+          style={{ "--active": activeIndex } as React.CSSProperties}
+        >
+          <span className="nav-indicator" aria-hidden="true" />
           {NAV_ITEMS.map(({ page: target, key, icon: Icon }) => (
             <button
               key={target}
@@ -183,27 +220,25 @@ function Shell({
               aria-current={activeNav === target ? "page" : undefined}
               onClick={() => setPage(target)}
             >
-              <Icon size={21} />
+              <Icon size={20} strokeWidth={2} />
               <span>{t[key]}</span>
             </button>
           ))}
         </div>
-        <figure className="rail-quote">
-          <blockquote>
-            No player should have to choose between motherhood and representing
-            her country.
-          </blockquote>
-          <figcaption>
-            Jay Shah, ICC Chairman.{" "}
-            <a
-              href={guideline.document.sourcePageUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              ICC release, 22 June 2026
-            </a>
-          </figcaption>
-        </figure>
+        <div className="rail-footer">
+          <div className="rail-clinician">
+            <span className="rail-clinician-icon">
+              <Stethoscope size={16} />
+            </span>
+            <p>
+              <small>{t.linkedClinician}</small>
+              <strong>{profile.clinicianName}</strong>
+            </p>
+          </div>
+          <p className="rail-note">
+            <LockKeyhole size={13} /> Video never leaves this device
+          </p>
+        </div>
       </nav>
       <main className="app-main" id="main-content" aria-live="polite">
         {children}
@@ -225,17 +260,32 @@ export function PlayerApp({
   const [metrics, setMetrics] = useState<CameraMetrics>(emptyMetrics);
   const [testKind, setTestKind] = useState<TestKind>("squat");
   const [symptoms, setSymptoms] = useState<string[]>([]);
-  const [latest, setLatest] = useState<TestRecord | null>(null);
+  const [history, setHistory] = useState<TestRecord[]>([]);
   const [online, setOnline] = useState(true);
   const [sync, setSync] = useState<SyncSummary>({
     mode: "render",
     synced: 0,
     pending: 0,
   });
+  const latest = history[0] ?? null;
 
   const setPage = useCallback((next: Page) => {
-    setPageState(next);
-    window.scrollTo({ top: 0 });
+    const apply = () => {
+      setPageState(next);
+      window.scrollTo({ top: 0 });
+      if (next === "home") window.dispatchEvent(new Event("comeback-refresh"));
+    };
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const doc = document as Document & {
+      startViewTransition?: (callback: () => void) => unknown;
+    };
+    if (doc.startViewTransition && !reduce) {
+      doc.startViewTransition(() => flushSync(apply));
+    } else {
+      apply();
+    }
   }, []);
 
   const load = useCallback(async () => {
@@ -252,12 +302,10 @@ export function PlayerApp({
     }
     setProfile(nextProfile ?? null);
     if (nextProfile) {
-      const records = await getAllValues<TestRecord>("tests");
-      setLatest(
-        records
+      setHistory(
+        (await getAllValues<TestRecord>("tests"))
           .filter((record) => record.playerId === nextProfile.id)
-          .sort((a, b) => b.completedAt.localeCompare(a.completedAt))[0] ??
-          null,
+          .sort((a, b) => b.completedAt.localeCompare(a.completedAt)),
       );
     }
     setLoaded(true);
@@ -293,15 +341,36 @@ export function PlayerApp({
 
   useEffect(() => {
     if (!profile || !API_URL) return;
-    const poll = window.setInterval(() => {
+    const refresh = () => {
       void pullRemoteProfile(profile).then((remote) => {
-        if (remote && remote.updatedAt !== profile.updatedAt) {
+        // Compare the fields that matter, not only the timestamp, so a stage
+        // decision is never missed if a timestamp happens to match.
+        if (
+          remote &&
+          (remote.updatedAt !== profile.updatedAt ||
+            remote.stage !== profile.stage ||
+            remote.stageStatus !== profile.stageStatus)
+        ) {
           setProfile(remote);
           void putValue("profiles", remote);
         }
       });
-    }, 5_000);
-    return () => window.clearInterval(poll);
+    };
+    // Browsers throttle timers in background tabs, so also refresh the moment
+    // the player comes back to the app or returns to Today.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    const poll = window.setInterval(refresh, 5_000);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("comeback-refresh", refresh);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearInterval(poll);
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("comeback-refresh", refresh);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [profile]);
 
   const captureMetrics = useCallback((kind: TestKind, next: CameraMetrics) => {
@@ -344,7 +413,7 @@ export function PlayerApp({
       updatedAt: new Date().toISOString(),
     };
     setProfile(nextProfile);
-    setLatest(record);
+    setHistory((current) => [record, ...current]);
     setPage("result");
     void (async () => {
       try {
@@ -397,7 +466,7 @@ export function PlayerApp({
       {page === "home" && (
         <Today
           profile={profile}
-          latest={latest}
+          history={history}
           online={online}
           sync={sync}
           onStart={startCheckIn}
@@ -444,6 +513,7 @@ export function PlayerApp({
         <Profile
           profile={profile}
           email={session.user.email}
+          checkIns={history.length}
           onLogout={onLogout}
           onReset={async () => {
             await clearLocalData();
@@ -455,54 +525,9 @@ export function PlayerApp({
   );
 }
 
-function ReturnArc({ stageIndex }: { stageIndex: number }) {
-  const center = { x: 160, y: 160 };
-  const radius = 132;
-  const progress = (stageIndex / (STAGES.length - 1)) * 100;
-  return (
-    <svg
-      className="return-arc"
-      viewBox="0 0 320 176"
-      role="img"
-      aria-label={`Stage ${stageIndex + 1} of ${STAGES.length}: ${STAGES[stageIndex]}`}
-    >
-      <path
-        className="arc-track"
-        d="M28 160 A132 132 0 0 1 292 160"
-        pathLength={100}
-      />
-      <path
-        className="arc-progress"
-        d="M28 160 A132 132 0 0 1 292 160"
-        pathLength={100}
-        strokeDasharray={`${progress} 100`}
-      />
-      {STAGES.map((stage, index) => {
-        const angle = Math.PI - (index / (STAGES.length - 1)) * Math.PI;
-        const x = center.x + radius * Math.cos(angle);
-        const y = center.y - radius * Math.sin(angle);
-        const state =
-          index < stageIndex
-            ? "done"
-            : index === stageIndex
-              ? "current"
-              : "next";
-        return (
-          <g key={stage} className={`arc-node ${state}`}>
-            {state === "current" && (
-              <circle cx={x} cy={y} r={15} className="arc-halo" />
-            )}
-            <circle cx={x} cy={y} r={state === "current" ? 9 : 6.5} />
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
 function Today({
   profile,
-  latest,
+  history,
   online,
   sync,
   onStart,
@@ -510,7 +535,7 @@ function Today({
   onJourney,
 }: {
   profile: PlayerProfile;
-  latest: TestRecord | null;
+  history: TestRecord[];
   online: boolean;
   sync: SyncSummary;
   onStart: () => void;
@@ -520,6 +545,7 @@ function Today({
   const stageIndex = STAGES.indexOf(profile.stage);
   const stageInfo = guideline.stages[stageIndex];
   const next = STAGES[stageIndex + 1];
+  const latest = history[0] ?? null;
   const t = UI_COPY[profile.language];
   const [explanation, setExplanation] = useState<StageExplanation | null>(null);
   const [question, setQuestion] = useState("");
@@ -550,28 +576,28 @@ function Today({
       : profile.stageStatus === "held"
         ? t.onHold
         : t.inProgress;
+  const weeks = weeksSince(profile.deliveryDate);
   return (
     <div className="page today-page">
-      <header className="page-intro">
+      <header className="greeting">
         <div>
-          <p className="intro-label">{t.returnPlan}</p>
+          <p className="greeting-date">
+            <CalendarDays size={14} /> {todayLabel(profile.language)}
+          </p>
           <h1>
             {t.welcomeBack}, {profile.name}
           </h1>
-          <p className="intro-copy">{t.homeIntro}</p>
+          <p className="greeting-copy">{t.homeIntro}</p>
         </div>
         <div className="status-chips">
-          <span className={`chip ${online ? "chip-good" : "chip-quiet"}`}>
-            {online ? <Wifi size={14} /> : <CloudOff size={14} />}
+          <span className={`chip ${online ? "chip-success" : "chip-neutral"}`}>
+            {online ? <Wifi size={13} /> : <CloudOff size={13} />}
             {online ? t.online : t.offlineReady}
           </span>
-          <span className="chip chip-quiet">
+          <span className="chip chip-neutral">
             {sync.mode === "render"
               ? t.synced
               : `${sync.pending} awaiting sync`}
-          </span>
-          <span className="chip chip-petal">
-            {fill(t.weeksSinceBirth, { n: weeksSince(profile.deliveryDate) })}
           </span>
         </div>
       </header>
@@ -579,67 +605,148 @@ function Today({
       <div className="today-grid">
         <div className="today-main">
           <section className="stage-card" aria-label={t.currentStage}>
-            <div className="stage-card-top">
-              <span className="stage-kicker">{t.currentStage}</span>
-              <span className={`stage-status ${profile.stageStatus}`}>
-                {statusLabel}
+            <SeamMotif className="stage-seam" />
+            <div className="stage-ring">
+              <ReturnRing
+                current={stageIndex}
+                label={fill(t.stageOf, {
+                  n: stageIndex + 1,
+                  total: STAGES.length,
+                })}
+              />
+              <span className="ring-center" aria-hidden="true">
+                <strong>{stageIndex + 1}</strong>
+                <small>/ {STAGES.length}</small>
               </span>
             </div>
-            <div className="arc-wrap">
-              <ReturnArc stageIndex={stageIndex} />
-              <div className="arc-label">
-                <span>
-                  {fill(t.stageOf, {
-                    n: stageIndex + 1,
-                    total: STAGES.length,
-                  })}
+            <div className="stage-copy">
+              <div className="stage-chips">
+                <span className="stage-pill">{t.currentStage}</span>
+                <span className={`stage-status ${profile.stageStatus}`}>
+                  {statusLabel}
                 </span>
-                <h2>{profile.stage}</h2>
               </div>
-            </div>
-            <p className="stage-purpose">{stageInfo?.purpose}</p>
-            <div className="stage-card-foot">
-              <p>
-                <ShieldCheck size={16} /> {t.stageGate}
+              <h2>{profile.stage}</h2>
+              <p className="stage-purpose">{stageInfo?.purpose}</p>
+              <p className="stage-meta">
+                <span>{stageInfo?.timing}</span>
+                <span aria-hidden="true" className="dot" />
+                <span>ICC guideline, page {stageInfo?.reference.pdfPage}</span>
               </p>
-              <button className="ghost-link" onClick={onJourney}>
+              <button className="stage-link" onClick={onJourney}>
                 {next ? fill(t.nextLabel, { stage: next }) : t.journey}
                 <ChevronRight size={16} />
               </button>
             </div>
           </section>
 
-          <section className="next-step">
-            <div className="section-head">
-              <h2>{t.nextStep}</h2>
-              <span>{t.aboutTwoMin}</span>
+          <div className="stat-row">
+            <div className="stat-tile">
+              <span className="stat-icon tone-accent">
+                <Baby size={18} />
+              </span>
+              <strong>
+                <CountUp value={weeks} />
+              </strong>
+              <small>
+                {fill(t.weeksSinceBirth, { n: "" }).replace(/\s+/g, " ").trim()}
+              </small>
             </div>
-            <button className="task-card" onClick={onStart}>
-              <span className="task-icon">
-                <Camera size={24} />
+            <div className="stat-tile">
+              <span className="stat-icon tone-primary">
+                <ClipboardCheck size={18} />
               </span>
-              <span className="task-copy">
-                <strong>{t.cameraCheck}</strong>
-                <small>
-                  {profile.stageStatus === "awaiting-review"
-                    ? `${t.awaitingReview}. You can still add another check-in.`
-                    : latest
-                      ? `Last saved ${new Date(latest.completedAt).toLocaleDateString()}`
-                      : t.cameraDescription}
-                </small>
+              <strong>
+                <CountUp value={history.length} />
+              </strong>
+              <small>{t.checkInsSaved}</small>
+            </div>
+            <div className="stat-tile">
+              <span className="stat-icon tone-success">
+                <Route size={18} />
               </span>
-              <span className="round-arrow" aria-hidden="true">
-                <ArrowRight size={20} />
-              </span>
-            </button>
+              <strong>
+                <CountUp value={stageIndex + 1} />
+                <span className="stat-of">/{STAGES.length}</span>
+              </strong>
+              <small>{t.iccStages}</small>
+            </div>
+          </div>
+
+          <section className="panel recent-panel">
+            <div className="panel-head">
+              <h2>Recent check-ins</h2>
+              <span className="panel-count">{history.length}</span>
+            </div>
+            {history.length === 0 ? (
+              <p className="panel-empty">
+                No check-ins yet. Your first one takes about two minutes and
+                goes straight to {profile.clinicianName}.
+              </p>
+            ) : (
+              <ul className="recent-list">
+                {history.slice(0, 4).map((record) => {
+                  const Icon = TEST_ICONS[record.kind];
+                  const flagged = record.symptoms.length > 0;
+                  return (
+                    <li key={record.id}>
+                      <span className="recent-icon">
+                        <Icon size={20} />
+                      </span>
+                      <p>
+                        <strong>{TEST_LABELS[record.kind]}</strong>
+                        <small>
+                          {shortDate(record.completedAt)},{" "}
+                          {record.kind === "balance"
+                            ? `${record.metrics.holdSeconds.toFixed(1)}s hold`
+                            : `${record.metrics.count} reps observed`}
+                        </small>
+                      </p>
+                      <span
+                        className={`chip ${flagged ? "chip-danger" : "chip-success"}`}
+                      >
+                        {flagged
+                          ? `${record.symptoms.length} symptom${record.symptoms.length > 1 ? "s" : ""}`
+                          : "Clear"}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </section>
         </div>
 
         <div className="today-side">
-          <section className="ai-guide">
-            <div className="ai-guide-heading">
+          <section className="next-step">
+            <h2 className="side-title">{t.nextStep}</h2>
+            <button className="task-card" onClick={onStart}>
+              <span className="task-top">
+                <span className="task-icon">
+                  <Camera size={22} />
+                </span>
+                <span className="task-time">
+                  <Clock3 size={13} /> {t.aboutTwoMin}
+                </span>
+              </span>
+              <strong>{t.cameraCheck}</strong>
+              <small>
+                {profile.stageStatus === "awaiting-review"
+                  ? `${t.awaitingReview}. You can still add another check-in.`
+                  : latest
+                    ? `Last saved ${shortDate(latest.completedAt)}`
+                    : t.cameraDescription}
+              </small>
+              <span className="task-cta">
+                {t.start} <ArrowRight size={16} />
+              </span>
+            </button>
+          </section>
+
+          <section className="panel ai-guide">
+            <div className="ai-head">
               <span className="ai-icon">
-                <Sparkles size={18} />
+                <Sparkles size={16} />
               </span>
               <div>
                 <strong>ComeBack Guide</strong>
@@ -683,9 +790,9 @@ function Today({
             </form>
           </section>
 
-          <section className="clinician-card">
+          <section className="panel clinician-card">
             <span className="clinician-avatar">
-              <Stethoscope size={22} />
+              <Stethoscope size={20} />
             </span>
             <div>
               <small>{t.linkedClinician}</small>
@@ -695,12 +802,12 @@ function Today({
               </span>
             </div>
             <button onClick={onMessage} aria-label="Message linked clinician">
-              <MessageCircleMore size={19} />
+              <MessageCircleMore size={18} />
             </button>
           </section>
 
           <p className="fine-print">
-            <ShieldCheck size={15} /> ComeBack supports your care team. It does
+            <ShieldCheck size={14} /> ComeBack supports your care team. It does
             not provide medical clearance.
           </p>
         </div>
@@ -711,11 +818,9 @@ function Today({
 
 function PageHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <header className="page-intro page-intro-simple">
-      <div>
-        <h1>{title}</h1>
-        <p className="intro-copy">{subtitle}</p>
-      </div>
+    <header className="page-head">
+      <h1>{title}</h1>
+      <p>{subtitle}</p>
     </header>
   );
 }
@@ -737,7 +842,7 @@ function FlowHeader({
     <header className="flow-header">
       <div className="flow-bar">
         <button className="back-button" onClick={onBack} aria-label="Go back">
-          <ArrowLeft size={20} />
+          <ArrowLeft size={18} />
         </button>
         <div
           className="flow-steps"
@@ -767,58 +872,95 @@ function Journey({ profile }: { profile: PlayerProfile }) {
         title="Your 6 Rs roadmap"
         subtitle="The ICC's six stages of return to play, with timing and guidance for where you are now."
       />
-      <ol className="timeline">
-        {guideline.stages.map((stage, index) => {
-          const state =
-            index < stageIndex
-              ? "done"
-              : index === stageIndex
-                ? "current"
-                : "next";
-          return (
-            <li className={`timeline-item ${state}`} key={stage.id}>
-              <span className="timeline-marker" aria-hidden="true">
-                {state === "done" ? (
-                  <Check size={15} strokeWidth={3} />
-                ) : (
-                  stage.order
-                )}
-              </span>
-              <div className="timeline-body">
-                <div className="timeline-heading">
-                  <h3>{stage.label}</h3>
-                  {state === "current" && (
-                    <span className="chip chip-petal">You are here</span>
+      <div className="journey-grid">
+        <ol className="timeline">
+          {guideline.stages.map((stage, index) => {
+            const state =
+              index < stageIndex
+                ? "done"
+                : index === stageIndex
+                  ? "current"
+                  : "next";
+            return (
+              <li
+                className={`timeline-item ${state}`}
+                key={stage.id}
+                style={{ "--i": index } as React.CSSProperties}
+              >
+                <span className="timeline-marker" aria-hidden="true">
+                  {state === "done" ? (
+                    <Check size={15} strokeWidth={3} />
+                  ) : (
+                    stage.order
                   )}
-                  <span className="timeline-timing">{stage.timing}</span>
-                </div>
-                <p>{stage.purpose}</p>
-                {state === "current" && (
-                  <ul>
-                    {stage.guidance.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                )}
-                {stage.id === "recondition" && (
-                  <div className="cricket-focus">
-                    <strong>
-                      Your cricket focus as a {profile.role.replace("-", " ")}
-                    </strong>
-                    <p>{CRICKET_FOCUS[profile.role]}</p>
+                </span>
+                <div className="timeline-body">
+                  <div className="timeline-heading">
+                    <h3>{stage.label}</h3>
+                    {state === "current" && (
+                      <span className="chip chip-accent">You are here</span>
+                    )}
+                    <span className="timeline-timing">{stage.timing}</span>
                   </div>
-                )}
-                <small>
-                  ICC guideline, page {stage.reference.pdfPage},{" "}
-                  {stage.reference.section}
-                </small>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
+                  <p>{stage.purpose}</p>
+                  {state === "current" && (
+                    <ul>
+                      {stage.guidance.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {stage.id === "recondition" && (
+                    <div className="cricket-focus">
+                      <strong>
+                        Your cricket focus as a {profile.role.replace("-", " ")}
+                      </strong>
+                      <p>{CRICKET_FOCUS[profile.role]}</p>
+                    </div>
+                  )}
+                  <small>
+                    ICC guideline, page {stage.reference.pdfPage},{" "}
+                    {stage.reference.section}
+                  </small>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+        <aside className="journey-side">
+          <section className="panel">
+            <h2 className="side-title">How a stage advances</h2>
+            <ol className="rule-list">
+              {PROGRESSION_RULES.map((rule) => (
+                <li key={rule}>
+                  <Check size={14} strokeWidth={3} /> {rule}
+                </li>
+              ))}
+            </ol>
+            <p className="panel-note">
+              All four must be true. Camera observations and the AI guide never
+              advance a stage on their own.
+            </p>
+          </section>
+          <section className="panel source-panel">
+            <h2 className="side-title">About this framework</h2>
+            <p>
+              The 6 Rs come from the ICC Return to Play Post-Pregnancy
+              Guidelines, published 22 June 2026 and led by the ICC Medical
+              Advisory Committee.
+            </p>
+            <a
+              href={guideline.document.sourcePageUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Read the ICC release
+            </a>
+          </section>
+        </aside>
+      </div>
       <p className="fine-print">
-        <ShieldCheck size={16} /> The ICC framework guides care-team
+        <ShieldCheck size={14} /> The ICC framework guides care-team
         conversations. It is not an automated clearance protocol.
       </p>
     </div>
@@ -858,16 +1000,8 @@ function Setup({
         onBack={onBack}
       />
       <div className="setup-grid">
-        <div className="guide-frame" aria-hidden="true">
-          <svg viewBox="0 0 200 260" className="guide-figure">
-            <circle cx="100" cy="52" r="17" />
-            <path d="M100 72 L100 150 M100 88 L70 124 M100 88 L130 124 M100 150 L82 222 M100 150 L118 222" />
-          </svg>
-          <span className="frame-corner tl" />
-          <span className="frame-corner tr" />
-          <span className="frame-corner bl" />
-          <span className="frame-corner br" />
-          <span className="distance-line">about 2 metres from the phone</span>
+        <div className="placement-card">
+          <PlacementDiagram className="placement-diagram" />
         </div>
         <div className="setup-side">
           <ol className="instruction-list">
@@ -882,10 +1016,10 @@ function Setup({
             ))}
           </ol>
           <button className="primary-button" onClick={onNext}>
-            <Camera size={19} /> {t.openCamera}
+            <Camera size={18} /> {t.openCamera}
           </button>
           <p className="fine-print">
-            <LockKeyhole size={15} /> Video is processed on this device and is
+            <LockKeyhole size={14} /> Video is processed on this device and is
             never saved or uploaded.
           </p>
         </div>
@@ -918,7 +1052,7 @@ function Test({
         onMetrics={onMetrics}
         action={
           <button className="primary-button" onClick={onNext}>
-            {t.continueSymptoms} <ArrowRight size={19} />
+            {t.continueSymptoms} <ArrowRight size={18} />
           </button>
         }
       />
@@ -968,7 +1102,7 @@ function Symptoms({
                 onChange={() => toggle(symptom.code)}
               />
               <span className="check-box" aria-hidden="true">
-                <Check size={14} strokeWidth={3} />
+                <Check size={13} strokeWidth={3.2} />
               </span>
               <span>{symptom.label}</span>
             </label>
@@ -977,23 +1111,25 @@ function Symptoms({
       </fieldset>
       {values.length > 0 && (
         <div className="red-flag-note" role="alert">
-          <Pause size={20} />
+          <Pause size={18} />
           <p>
             <strong>Pause this stage and contact your care team.</strong>
             <span>Your answers will be highlighted for clinician review.</span>
           </p>
         </div>
       )}
-      <button
-        className={`primary-button ${values.length ? "primary-alert" : ""}`}
-        onClick={onNext}
-      >
-        {values.length ? t.saveReview : t.saveClear}
-      </button>
-      <p className="fine-print">
-        <ShieldCheck size={15} /> Symptom screen from Goom, Donnelly and
-        Brockwell 2019, pages 10, 13 and 14 (expert consensus).
-      </p>
+      <div className="flow-actions">
+        <button
+          className={`primary-button ${values.length ? "primary-alert" : ""}`}
+          onClick={onNext}
+        >
+          {values.length ? t.saveReview : t.saveClear}
+        </button>
+        <p className="fine-print">
+          <ShieldCheck size={14} /> Symptom screen from Goom, Donnelly and
+          Brockwell 2019, pages 10, 13 and 14 (expert consensus).
+        </p>
+      </div>
     </div>
   );
 }
@@ -1014,10 +1150,17 @@ function Result({
   const clear = !record?.symptoms.length;
   return (
     <div className="page flow-page narrow result-page">
-      <div className={`result-orb ${clear ? "" : "hold"}`} aria-hidden="true">
-        {clear ? <Check size={36} strokeWidth={2.6} /> : <Pause size={34} />}
+      <div className={`result-mark ${clear ? "" : "hold"}`} aria-hidden="true">
+        <svg viewBox="0 0 52 52">
+          <circle className="result-circle" cx="26" cy="26" r="24" />
+          {clear ? (
+            <path className="result-check" d="M15 27l7 7 15-16" />
+          ) : (
+            <path className="result-check" d="M21 17v18M31 17v18" />
+          )}
+        </svg>
       </div>
-      <p className="intro-label">{t.saved}</p>
+      <p className="eyebrow-text">{t.saved}</p>
       <h2>{clear ? `${t.thanks}, ${profile.name}` : "Pause and check in"}</h2>
       <p className="result-copy">
         {clear
@@ -1045,7 +1188,7 @@ function Result({
         </div>
       </dl>
       <div className={`approval-card ${clear ? "" : "hold"}`}>
-        <Stethoscope size={22} />
+        <Stethoscope size={20} />
         <div>
           <strong>
             {clear ? t.awaitingReview : "Review requested with symptom alert"}
@@ -1081,8 +1224,10 @@ function Support({ profile }: { profile: PlayerProfile }) {
           title={profile.clinicianName}
         />
         <aside className="support-side">
-          <section className="support-hero">
-            <HeartHandshake size={28} />
+          <section className="panel support-hero">
+            <span className="support-icon">
+              <HeartHandshake size={22} />
+            </span>
             <h2>You do not have to navigate this alone.</h2>
             <p>
               ComeBack keeps your observations organised for conversations with
@@ -1091,8 +1236,8 @@ function Support({ profile }: { profile: PlayerProfile }) {
           </section>
           <ul className="support-list">
             <li>
-              <span>
-                <Stethoscope size={19} />
+              <span className="tone-success">
+                <Stethoscope size={18} />
               </span>
               <p>
                 <small>Linked clinician, ICC verified</small>
@@ -1100,8 +1245,8 @@ function Support({ profile }: { profile: PlayerProfile }) {
               </p>
             </li>
             <li>
-              <span>
-                <Pause size={19} />
+              <span className="tone-danger">
+                <Pause size={18} />
               </span>
               <p>
                 <small>If symptoms appear</small>
@@ -1122,11 +1267,13 @@ function Support({ profile }: { profile: PlayerProfile }) {
 function Profile({
   profile,
   email,
+  checkIns,
   onLogout,
   onReset,
 }: {
   profile: PlayerProfile;
   email: string;
+  checkIns: number;
   onLogout: () => void;
   onReset: () => void;
 }) {
@@ -1137,69 +1284,87 @@ function Profile({
     ur: "Urdu",
   } as const;
   return (
-    <div className="page narrow">
+    <div className="page">
       <PageHeader
         title="Your profile"
         subtitle="The details used to personalise your journey."
       />
-      <section className="profile-card">
-        <div className="profile-head">
-          <div className="profile-avatar">{initials(profile.name)}</div>
-          <div>
-            <h2>{profile.name}</h2>
-            <span className="capitalize">{profile.role.replace("-", " ")}</span>
+      <div className="profile-grid">
+        <section className="profile-card">
+          <div className="profile-head">
+            <SeamMotif className="profile-seam" />
+            <div className="profile-avatar">{initials(profile.name)}</div>
+            <div>
+              <h2>{profile.name}</h2>
+              <span className="capitalize">
+                {profile.role.replace("-", " ")}
+              </span>
+            </div>
           </div>
+          <dl className="profile-stats">
+            <div>
+              <dt>Stage</dt>
+              <dd>{profile.stage}</dd>
+            </div>
+            <div>
+              <dt>Weeks</dt>
+              <dd>{weeksSince(profile.deliveryDate)}</dd>
+            </div>
+            <div>
+              <dt>Check-ins</dt>
+              <dd>{checkIns}</dd>
+            </div>
+          </dl>
+        </section>
+        <section className="panel details-panel">
+          <h2 className="side-title">Details</h2>
+          <dl className="details-list">
+            <div>
+              <dt>Email</dt>
+              <dd>{email}</dd>
+            </div>
+            <div>
+              <dt>Delivery date</dt>
+              <dd>
+                {new Date(
+                  `${profile.deliveryDate}T00:00:00`,
+                ).toLocaleDateString()}
+              </dd>
+            </div>
+            <div>
+              <dt>Delivery type</dt>
+              <dd className="capitalize">{profile.deliveryType}</dd>
+            </div>
+            <div>
+              <dt>Language</dt>
+              <dd>{languageNames[profile.language]}</dd>
+            </div>
+            <div>
+              <dt>Clinician</dt>
+              <dd>{profile.clinicianName}</dd>
+            </div>
+          </dl>
+        </section>
+        <section className="privacy-card">
+          <LockKeyhole size={18} />
+          <div>
+            <strong>Local-first privacy</strong>
+            <p>
+              Camera frames stay in memory only. Your profile and movement
+              observations are stored on this device and synced only with your
+              consent.
+            </p>
+            <Link href="/privacy">Read privacy and consent details</Link>
+          </div>
+        </section>
+        <div className="profile-actions">
+          <button className="secondary-button" onClick={onLogout}>
+            <LogOut size={17} /> Sign out
+          </button>
+          <button className="danger-text-button" onClick={onReset}>
+            Erase data on this device
+          </button>
         </div>
-        <dl>
-          <div>
-            <dt>Email</dt>
-            <dd>{email}</dd>
-          </div>
-          <div>
-            <dt>Delivery date</dt>
-            <dd>
-              {new Date(
-                `${profile.deliveryDate}T00:00:00`,
-              ).toLocaleDateString()}
-            </dd>
-          </div>
-          <div>
-            <dt>Delivery type</dt>
-            <dd className="capitalize">{profile.deliveryType}</dd>
-          </div>
-          <div>
-            <dt>Language</dt>
-            <dd>{languageNames[profile.language]}</dd>
-          </div>
-          <div>
-            <dt>Current stage</dt>
-            <dd>{profile.stage}</dd>
-          </div>
-          <div>
-            <dt>Clinician</dt>
-            <dd>{profile.clinicianName}</dd>
-          </div>
-        </dl>
-      </section>
-      <section className="privacy-card">
-        <LockKeyhole size={20} />
-        <div>
-          <strong>Local-first privacy</strong>
-          <p>
-            Camera frames stay in memory only. Your profile and movement
-            observations are stored on this device and synced only with your
-            consent.
-          </p>
-          <Link href="/privacy">Read privacy and consent details</Link>
-        </div>
-      </section>
-      <div className="profile-actions">
-        <button className="secondary-button" onClick={onLogout}>
-          <LogOut size={18} /> Sign out
-        </button>
-        <button className="danger-text-button" onClick={onReset}>
-          Erase data on this device
-        </button>
       </div>
     </div>
   );

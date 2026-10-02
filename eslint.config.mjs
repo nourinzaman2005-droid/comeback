@@ -11,5 +11,7 @@ export default defineConfig([
     "coverage/**",
     "public/mediapipe/**",
     "next-env.d.ts",
+    "video/**",
+    "video-assets-tmp/**",
   ]),
 ]);

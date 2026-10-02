@@ -6,6 +6,7 @@ const basePath = isGitHubPages ? "/comeback" : "";
 const nextConfig: NextConfig = {
   agentRules: false,
   reactStrictMode: true,
+  devIndicators: false,
   output: isGitHubPages ? "export" : undefined,
   trailingSlash: isGitHubPages,
   basePath,
