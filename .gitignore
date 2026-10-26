@@ -17,3 +17,6 @@ video-assets-tmp/
 
 # Local design references
 inspired_ui/
+
+# Deck images include third-party broadcast frames
+docs/submission/deck/assets/

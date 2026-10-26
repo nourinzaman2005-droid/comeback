@@ -50,7 +50,7 @@ This file is the persistent memory for this project. Read it fully at the start 
 - **Our goal:** Win the **All Female Team Category (USD 2,500)**. Also eligible for Overall Winner (USD 5,000).
 - **Team requirement:** Every team member must be female for the all-female prize.
 - **Entry deadline:** Monday, October 5, 2026. Internal target: submit by **October 4, 2026**.
-- **Demo date:** Monday, October 26, 2026 (Dubai AI Festival, Ignyte Innovation Hub).
+- **Demo date:** Tuesday, October 27, 2026, 1pm to 2pm (Start-up Stage, Dubai AI Festival, Dubai World Trade Centre).
 - **Track:** Prototype track (working prototype + demo video, max 3 minutes).
 - **Required submission:**
   - Pitch deck
@@ -605,7 +605,9 @@ gantt
 - **2 Oct 2026 voiceover:** user chose Ava (`en-US-AvaMultilingualNeural`, free Microsoft neural voice via `edge-tts`). `video/scripts/voiceover.py` generates each line, fits it to its scene window (max 1.12x), mixes and loudness-normalises to `video/public/voiceover.mp3` (176.4s). It was muxed onto both videos with ffmpeg (no re-render): `comeback-promo-master.mp4` (64.7 MB, AAC 192k) and `comeback-promo-under40mb.mp4` (37.8 MB, AAC 96k). Speech starts verified within 0.1s of each scene. Names are spelled "Noo-rin" and "Aash-ra" for pronunciation. Background music: "Touching Moments Two - Higher" by Kevin MacLeod (CC BY 4.0, credit required in the video description), loudness -30 LUFS and side-chain ducked under the voice into `public/voiceover-with-music.mp3`, which is what both videos now carry (master 65.8 MB, under40mb 38.4 MB).
 - **2 Oct 2026 fix:** in-memory API decisions did not bump `updatedAt`, so a backgrounded player could miss a stage approval. Fixed in `server/index.mjs` and the player poll now also compares stage and status; covered in `tests/render-api.test.ts`.
 - **2 Oct 2026 SUBMITTED:** the user submitted the 5-slide pitch deck PDF (Claude Slides artifact https://claude.ai/artifact/4zaaUFT8uQr9wZdtUzRTm2, Manrope + Inter, clickable sources) and the promo video (YouTube: https://youtu.be/HjBi7i1aPt8, now linked on slide 5). Next: wait for the finalist announcement. If shortlisted, email the organisers about in-person attendance at the Dubai AI Festival (26 Oct 2026), a virtual option, and travel and visa costs.
-- **Next task (before submission, now superseded):** Verify the redesigned GitHub Pages deployment, perform the physical Android/count validation, verify the optional Groq-generated path, record the demo video, and submit.
+- **13 Oct 2026 FINALIST:** ComeBack was selected as one of five finalist teams by the ICC for the Demo Day pitch.
+- **17 Oct 2026 Demo Day deck & script:** `docs/submission/ComeBack Pitch Deck.pdf` (17-slide deck) and `docs/submission/PRESENTATION_SCRIPT.md` (spoken script and jury Q&A prep) finalized.
+- **26 Oct 2026 Project Finalization:** Hackathon phase concluded. Unnecessary temporary sponsorship files and outreach scripts removed. Codebase, test coverage, and documentation finalized for future competitions and open-source demonstration.
 - **Decisions log:**
   - 24 Sep 2026: Problem statement 3 chosen. ComeBack idea locked after two research rounds (11 ideas evaluated).
   - 24 Sep 2026: Initial stack decided. LLM never decides progression.

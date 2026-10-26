@@ -10,6 +10,9 @@ const ignored = new Set([
   "coverage",
   "test-results",
   "playwright-report",
+  "out",
+  "video",
+  "dist",
 ]);
 const oversized = [];
 
